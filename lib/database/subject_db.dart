@@ -202,4 +202,20 @@ Future<List> fetchSubjects() async {
   await database.rawDelete('DELETE FROM $tableName2 WHERE subName = ?', [subName]);
 }
 
+Future<int> updateDateSheet(String day, String subName, String from, String to) async {
+  final database = await DatabaseService().database;
+  return await database.update(
+    tableName3,
+    {
+      'day': day,
+      'subName': subName,
+      'fromTime': from,
+      'toTime': to,
+    },
+    where: 'subName = ?',
+    whereArgs: [subName],
+  );
+}
+
+
 }

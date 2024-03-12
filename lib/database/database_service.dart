@@ -1,4 +1,4 @@
-import 'package:logger/logger.dart';
+import "package:logger/logger.dart";
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:spark/database/subject_db.dart';

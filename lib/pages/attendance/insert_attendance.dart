@@ -120,6 +120,7 @@ class EnterState extends State<Enter> {
                               Text(item.subName),
                             ],
                           ),
+                          const SizedBox(height: 10.0),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -127,6 +128,7 @@ class EnterState extends State<Enter> {
                               Text(item.subCode),
                             ],
                           ),
+                          const SizedBox(height: 10.0),
                           Container(
                             height: 70,
                             padding: const EdgeInsets.all(8.0),
@@ -134,6 +136,7 @@ class EnterState extends State<Enter> {
                               decoration: const InputDecoration(
                                 labelText: 'Date of Class',
                                 border: OutlineInputBorder(),
+                                contentPadding: EdgeInsets.symmetric(vertical: 20.0)
                               ),
                               mode: DateTimeFieldPickerMode.date,
                               dateFormat: DateFormat("dd/MM/yyyy"),
@@ -157,7 +160,7 @@ class EnterState extends State<Enter> {
                                 '*Please select a valid date',
                                 style: TextStyle(
                                   color: Colors.black,
-                                  fontSize: 10.0,
+                                  fontSize: 8.0,
                                 ),
                               ),
                             ),
