@@ -1,36 +1,37 @@
-import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
-import 'package:spark/data/subject_details.dart';
-import 'package:spark/database/subject_db.dart';
-import 'package:spark/pages/attendance/search_attendance.dart';
-import 'detail_screen.dart';
+import 'dart:math';
 
-// Constants
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:logger/logger.dart';
+import '../../Boxes/subject.dart';
+import '../../Providers/attendance_provider.dart';
+import '../../Widgets/add_subject.dart';
+import 'details.dart';
+import 'search.dart';
+import 'package:uuid/uuid.dart' as uuid;
+
 const String backgroundImagePath = 'assets/background_image.jpeg';
 const Color loadingIndicatorColor = Color.fromARGB(255, 6, 139, 55);
-const Color primaryColor = Colors.blue;
 
-class AttendanceMain extends StatefulWidget {
-  const AttendanceMain({Key? key}) : super(key: key);
+class Attendance extends StatefulWidget {
+  const Attendance({super.key});
 
   @override
-  AttendanceMainState createState() => AttendanceMainState();
+  State<Attendance> createState() => _AttendanceState();
 }
 
-class AttendanceMainState extends State<AttendanceMain> {
-  late Future<List<Subject>>? items;
-  final subjectDB = SubjectDB();
-
+class _AttendanceState extends State<Attendance> {
   @override
   void initState() {
     super.initState();
-    fetchList();
+    Provider.of<AttendanceProvider>(context, listen: false).fetchSubjects();
   }
 
-  void fetchList() {
-    items = subjectDB.fetchAll();
-    setState(() {});
-  }
+  final uuidUuid = const uuid.Uuid();
+
+    String generateUuid() {
+      return uuidUuid.v4();
+    }
 
   void _onItemTapped(BuildContext context, Subject item) {
     final Logger logger = Logger();
@@ -67,28 +68,54 @@ class AttendanceMainState extends State<AttendanceMain> {
   }
 
   void _navigateToItemEntry(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Add New Subject'),
-          content: ItemEntryDialog(
-            onAddSubject: (subjectName, subjectCode) {
-              Logger().e('Subject Name: $subjectName, Subject Code: $subjectCode');
-              SubjectDB().create1(
-                subName: subjectName,
-                subCode: subjectCode,
-              );
-              Navigator.of(context).pop();
-              fetchList(); // Refresh the list after adding a subject
-            },
-          ),
-        );
-      },
-    );
-  }
+    final Random random = Random();
 
-  void _deleteSubject(BuildContext context, String subjectName) {
+    int generateIntKey() {
+      // Generate a random integer between 1 and 1000000 (inclusive)
+      return random.nextInt(1000000) + 1;
+    }
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: const Text(
+          'Add New Subject',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+        ),
+        content: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ItemEntryDialog(
+                  onAddSubject: (subjectName, subjectCode) {
+                    Logger().e('Subject Name: $subjectName, Subject Code: $subjectCode');
+                    final newSubject = Subject(
+                      subName: subjectName,
+                      subCode: subjectCode,
+                      nPresent: 0,
+                      nTotal: 0,
+                      percent: 0.0, key: generateIntKey(),
+                    );
+                    Provider.of<AttendanceProvider>(context, listen: false).addSubject(newSubject);
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}
+
+
+  void _deleteSubject(BuildContext context, Subject subject,int index) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -104,9 +131,8 @@ class AttendanceMainState extends State<AttendanceMain> {
             ),
             TextButton(
               onPressed: () {
-                subjectDB.delete(subjectName);
+                Provider.of<AttendanceProvider>(context, listen: false).deleteSubject(subject,index);
                 Navigator.of(context).pop();
-                fetchList(); // Refresh the list after deleting a subject
               },
               child: const Text('Delete'),
             ),
@@ -120,22 +146,41 @@ class AttendanceMainState extends State<AttendanceMain> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Spark'),
+        backgroundColor: Colors.green, // Add a background color
+        elevation: 15,
+        title: const Text(
+          'Attendance Tracker',
+          style: TextStyle(fontStyle: FontStyle.italic, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
-              fetchList(); // Refresh the list when the refresh icon is pressed
+              Provider.of<AttendanceProvider>(context, listen: false).fetchSubjects();
             },
           ),
         ],
       ),
-      body: _buildBody(),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Background Image
+          Image.asset(
+            backgroundImagePath,
+            fit: BoxFit.cover,
+            color: Colors.black.withOpacity(0.6), // Adjust opacity for better readability
+            colorBlendMode: BlendMode.darken,
+          ),
+          // Attendance List
+          _buildBody(),
+        ],
+      ),
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           FloatingActionButton(
-            heroTag: 'ADD',
+            heroTag: 'addButton',
             onPressed: () {
               _navigateToItemEntry(context);
             },
@@ -144,7 +189,7 @@ class AttendanceMainState extends State<AttendanceMain> {
           ),
           const SizedBox(height: 16),
           FloatingActionButton(
-            heroTag: 'Search',
+            heroTag: 'searchButton',
             onPressed: () {
               _search(context);
             },
@@ -157,29 +202,20 @@ class AttendanceMainState extends State<AttendanceMain> {
   }
 
   Widget _buildBody() {
-    return FutureBuilder<List<Subject>>(
-      future: items,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(loadingIndicatorColor),
-              strokeWidth: 6.0,
-            ),
-          );
-        } else if (snapshot.hasError) {
-          return Text('Error: ${snapshot.error}');
-        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+    return Consumer<AttendanceProvider>(
+      builder: (context, attendanceProvider, child) {
+        if (attendanceProvider.subjects.isEmpty) {
           return const Center(child: Text('No Subjects added Yet'));
         } else {
           return ListView.builder(
-            itemCount: snapshot.data!.length,
+            itemCount: attendanceProvider.subjects.length,
             itemBuilder: (context, index) {
-              final subject = snapshot.data![index];
+              final subject = attendanceProvider.subjects[index];
               return Card(
                 elevation: 4,
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: ListTile(
+                  visualDensity: const VisualDensity(horizontal: 3,vertical: 3),
                   contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
                   title: Text(subject.subName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24.0)),
                   subtitle: Text(subject.subCode, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
@@ -187,7 +223,7 @@ class AttendanceMainState extends State<AttendanceMain> {
                     borderRadius: BorderRadius.only(topLeft: Radius.circular(10), bottomRight: Radius.circular(8)),
                   ),
                   onTap: () => _onItemTapped(context, subject),
-                  onLongPress: () => _deleteSubject(context, subject.subName),
+                  onLongPress: () => _deleteSubject(context, subject,index),
                   trailing: Container(
                     width: 100,
                     height: 100,
@@ -198,7 +234,7 @@ class AttendanceMainState extends State<AttendanceMain> {
                     alignment: Alignment.center,
                     child: Text(
                       subject.percent.toStringAsFixed(2),
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black),
                     ),
                   ),
                 ),
@@ -211,47 +247,12 @@ class AttendanceMainState extends State<AttendanceMain> {
   }
 
   Color _getPercentageColor(int percent) {
-    if (percent >= 80) {
+    if (percent >= 85) {
       return Colors.green;
     } else if (percent >= 75) {
       return Colors.yellow;
     } else {
       return Colors.red;
     }
-  }
-}
-
-class ItemEntryDialog extends StatelessWidget {
-  final Function(String, String) onAddSubject;
-
-  const ItemEntryDialog({Key? key, required this.onAddSubject}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    TextEditingController subjectNameController = TextEditingController();
-    TextEditingController subjectCodeController = TextEditingController();
-
-    return Column(
-      children: [
-        TextFormField(
-          controller: subjectNameController,
-          decoration: const InputDecoration(labelText: 'Subject Name'),
-        ),
-        TextFormField(
-          controller: subjectCodeController,
-          decoration: const InputDecoration(labelText: 'Subject Code'),
-        ),
-        const SizedBox(height: 16),
-        ElevatedButton(
-          onPressed: () {
-            onAddSubject(
-              subjectNameController.text,
-              subjectCodeController.text,
-            );
-          },
-          child: const Text('Add Subject'),
-        ),
-      ],
-    );
   }
 }

@@ -1,15 +1,24 @@
-import 'dart:io';
-import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:spark/my_app.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+  import 'package:flutter/material.dart';
+  import 'package:provider/provider.dart';
+  import 'package:hive_flutter/hive_flutter.dart';
+  import 'Boxes/attendance_count.dart';
+  import 'Boxes/subject.dart';
+  import 'Providers/attendance_provider.dart';
+  import 'my_app.dart';
 
-void main() async {
-  if (Platform.isWindows || Platform.isLinux) {
-        sqfliteFfiInit();
-        databaseFactory = databaseFactoryFfi;
-      }
-  WidgetsFlutterBinding.ensureInitialized();
-  debugPaintSizeEnabled = false;
-  runApp(const Spark());
-}
+  void main() async {
+    await Hive.initFlutter();
+    Hive.registerAdapter(SubjectAdapter());
+    await Hive.openBox<Subject>('subjects');
+    Hive.registerAdapter(AttendanceCountAdapter());
+    await Hive.openBox<AttendanceCount>('attendance_counts');
+
+    runApp(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => AttendanceProvider()),
+        ],
+        child: const Spark(),
+      ),
+    );
+  }
