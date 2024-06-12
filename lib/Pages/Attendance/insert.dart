@@ -10,15 +10,19 @@ import 'package:uuid/uuid.dart' as uuid;
 class InsertAttendance extends StatelessWidget {
   final Subject item;
   const InsertAttendance({super.key, required this.item});
+  
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Center(
-          child: Text(
-            "Attendance",
-            style: TextStyle(fontWeight: FontWeight.bold),
+        backgroundColor: Colors.green,
+        elevation: 15,
+        title: const Text(
+          "Attendance",
+          style: TextStyle(
+            fontStyle: FontStyle.italic,
+            fontWeight: FontWeight.bold,
           ),
         ),
         centerTitle: true,
@@ -41,6 +45,7 @@ class EnterState extends State<Enter> {
   DateTime? selectedDate;
   bool isFirstEntry = true;
   TextEditingController dateCtl = TextEditingController();
+  final String backgroundImagePath = 'assets/background_image.jpeg';
 
   @override
   void initState() {
@@ -58,43 +63,59 @@ class EnterState extends State<Enter> {
 
   Scaffold basicLayout() {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
-              height: 200,
-              padding: const EdgeInsets.all(12),
-              child: Column(
+      body: Stack(
+        children: [
+          Image.asset(
+                backgroundImagePath,
+                fit: BoxFit.cover,
+                color: Colors.black
+                .withOpacity(0.6), // Adjust opacity for better readability
+                colorBlendMode: BlendMode.darken),
+          SingleChildScrollView(
+                child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
                 children: [
-                  Card(
-                    child: ListTile(
-                      title: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text("Subject Name"),
-                              Text(widget.item.subName),
-                            ],
-                          ),
-                          const SizedBox(height: 10.0),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text("Subject Code"),
-                              Text(widget.item.subCode),
-                            ],
-                          ),
-                          const SizedBox(height: 10.0),
-                          Container(
-                            height: 70,
-                            padding: const EdgeInsets.all(8.0),
-                            child: TextFormField(
+                Card(
+                  elevation: 4,
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        _buildDetailRow("Subject Name", widget.item.subName),
+                        const SizedBox(height: 10.0),
+                        _buildDetailRow("Subject Code", widget.item.subCode),
+                        const SizedBox(height: 10.0),
+                        Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10)
+                        ),
+                        child: Column(
+                          children: [
+                            TextFormField(
                               controller: dateCtl,
                               decoration: const InputDecoration(
                                 labelText: 'Date of Class',
+                                labelStyle: TextStyle(
+                                  color: Colors.green,
+                                  fontWeight: FontWeight.bold,
+                                ),
                                 border: OutlineInputBorder(),
-                                contentPadding: EdgeInsets.symmetric(vertical: 20.0),
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.green),
+                                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.green, width: 2.0),
+                                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                                ),
+                                contentPadding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 12.0),
+                                filled: true,
                               ),
                               onTap: () async {
                                 FocusScope.of(context).requestFocus(FocusNode());
@@ -112,68 +133,102 @@ class EnterState extends State<Enter> {
                                 }
                               },
                             ),
-                          ),
-                          if (!isDateValid() && !isFirstEntry)
-                            Container(
-                              padding: const EdgeInsets.only(top: 1.0),
-                              child: const Text(
-                                '*Please select a valid date',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 8.0,
+                            if (!isDateValid() && !isFirstEntry)
+                              Container(
+                                padding: const EdgeInsets.only(top: 8.0),
+                                alignment: Alignment.centerLeft,
+                                child: const Text(
+                                  '*Please select a valid date',
+                                  style: TextStyle(
+                                    color: Colors.red,
+                                    fontSize: 12.0,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
-                            ),
-                        ],
+                          ],
+                        ),
+                      ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    ElevatedButton(
+                      onPressed: isDateValid() ? () => attendance(context, true) : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                        fixedSize: const Size(120, 50),
+                      ),
+                      child: const Text(
+                        'Present',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                ElevatedButton(
-                  onPressed: isDateValid() ? () => attendance(context, true) : null,
-                  style: ButtonStyle(
-                    fixedSize: MaterialStateProperty.all<Size>(
-                      const Size(120, 50),
+                    ElevatedButton(
+                      onPressed: isDateValid() ? () => attendance(context, false) : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+                        fixedSize: const Size(120, 50),
+                      ),
+                      child: const Text(
+                        "Absent",
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
                     ),
-                  ),
-                  child: const Text('Present'),
-                ),
-                ElevatedButton(
-                  onPressed: isDateValid() ? () => attendance(context, false) : null,
-                  style: ButtonStyle(
-                    fixedSize: MaterialStateProperty.all<Size>(
-                      const Size(120, 50),
-                    ),
-                  ),
-                  child: const Text("Absent"),
+                  ],
                 ),
               ],
             ),
-          ],
+          ),
         ),
+        ]
       ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        Text(
+          value,
+          style: const TextStyle(fontSize: 16),
+        ),
+      ],
     );
   }
 
   String formatDate(DateTime date) {
     return DateFormat('dd/MM/yyyy').format(date);
   }
+
   final uuidUuid = const uuid.Uuid();
   String generateUuid() {
-      return uuidUuid.v4();
-    }
+    return uuidUuid.v4();
+  }
 
   void attendance(BuildContext context, bool attend) {
     String id = generateUuid();
     if (selectedDate != null) {
       try {
         final attendance = AttendanceCount(
-          id:id,
+          id: id,
           subName: widget.item.subName,
           date: formatDate(selectedDate!),
           attend: attend,

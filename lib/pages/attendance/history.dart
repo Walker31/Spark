@@ -8,6 +8,8 @@ import '../../Boxes/subject.dart';
 class History extends StatelessWidget {
   final Subject item;
   const History({super.key, required this.item});
+  final String backgroundImagePath = 'assets/background_image.jpeg';
+
 
   @override
   Widget build(BuildContext context) {
@@ -16,12 +18,22 @@ class History extends StatelessWidget {
         title: const Center(
           child: Text(
             "History",
-            style: TextStyle(fontWeight: FontWeight.bold),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
           ),
         ),
         centerTitle: true,
+        backgroundColor: Colors.green,
+        elevation: 15,
       ),
-      body: HistoryList(item: item),
+      body: Stack(children: [
+        Image.asset(
+                backgroundImagePath,
+                fit: BoxFit.cover,
+                color: Colors.black
+                .withOpacity(0.6), // Adjust opacity for better readability
+                colorBlendMode: BlendMode.darken),
+        HistoryList(item: item)
+        ]),
     );
   }
 }
@@ -39,6 +51,8 @@ class HistoryState extends State<HistoryList> {
   late Subject item;
   late Future<List<AttendanceCount>>? items;
   final Logger logger = Logger();
+  final String backgroundImagePath = 'assets/background_image.jpeg';
+
 
   @override
   void initState() {
@@ -68,51 +82,81 @@ class HistoryState extends State<HistoryList> {
 
   @override
   Widget build(BuildContext context) {
-    return layout();
-  }
-
-  Scaffold layout() {
     return Scaffold(
-      body: FutureBuilder<List<AttendanceCount>>(
-        future: items,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          } else if (snapshot.hasError) {
-            return Center(
-              child: Text('Error: ${snapshot.error}'),
-            );
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(
-              child: Text('No history available for ${item.subName}'),
-            );
-          } else {
-            List<AttendanceCount> historyList = snapshot.data!;
-            return ListView.builder(
-              itemCount: historyList.length,
-              itemBuilder: (context, index) {
-                AttendanceCount historyItem = historyList[index];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 8.0), // Add vertical padding
-                  child: ListTile(
-                    tileColor: const Color.fromARGB(255, 151, 27, 235),
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(10),
-                        bottomRight: Radius.circular(10),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset(
+                backgroundImagePath,
+                fit: BoxFit.cover,
+                color: Colors.black
+                .withOpacity(0.6), // Adjust opacity for better readability
+                colorBlendMode: BlendMode.darken),
+          FutureBuilder<List<AttendanceCount>>(
+          future: items,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            } else if (snapshot.hasError) {
+              return Center(
+                child: Text(
+                  'Error: ${snapshot.error}',
+                  style: const TextStyle(
+                    color: Colors.red,
+                    fontSize: 16,
+                  ),
+                ),
+              );
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return Center(
+                child: Text(
+                  'No history available for ${item.subName}',
+                  style: const TextStyle(
+                    color: Colors.grey,
+                    fontSize: 16,
+                  ),
+                ),
+              );
+            } else {
+              List<AttendanceCount> historyList = snapshot.data!;
+              return ListView.builder(
+                itemCount: historyList.length,
+                itemBuilder: (context, index) {
+                  AttendanceCount historyItem = historyList[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 8.0,
+                    ),
+                    child: ListTile(
+                      tileColor: const Color.fromARGB(255, 151, 27, 235),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      title: Text(
+                        DateFormat('dd/MM/yyyy').format(historyItem.date as DateTime),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      trailing: Text(
+                        historyItem.attend ? 'Present' : 'Absent',
+                        style: TextStyle(
+                          color: historyItem.attend ? Colors.green : Colors.red,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                    title: Text(DateFormat('dd/MM/yyyy').format(historyItem.date as DateTime)), // Format date for better readability
-                    trailing: Text(historyItem.attend ? 'Present' : 'Absent'),
-                  ),
-                );
-              },
-            );
-          }
-        },
+                  );
+                },
+              );
+            }
+          },
+        ),
+        ]
       ),
     );
   }

@@ -29,9 +29,9 @@ class _AttendanceState extends State<Attendance> {
 
   final uuidUuid = const uuid.Uuid();
 
-    String generateUuid() {
-      return uuidUuid.v4();
-    }
+  String generateUuid() {
+    return uuidUuid.v4();
+  }
 
   void _onItemTapped(BuildContext context, Subject item) {
     final Logger logger = Logger();
@@ -43,7 +43,8 @@ class _AttendanceState extends State<Attendance> {
             return DetailScreen(item: item);
           } catch (e) {
             logger.d('Error navigating to DetailScreen: $e');
-            return const Scaffold(body: Center(child: Text('Error loading details')));
+            return const Scaffold(
+                body: Center(child: Text('Error loading details')));
           }
         },
       ),
@@ -74,48 +75,52 @@ class _AttendanceState extends State<Attendance> {
       // Generate a random integer between 1 and 1000000 (inclusive)
       return random.nextInt(1000000) + 1;
     }
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: const Text(
-          'Add New Subject',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
-        ),
-        content: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ItemEntryDialog(
-                  onAddSubject: (subjectName, subjectCode) {
-                    Logger().e('Subject Name: $subjectName, Subject Code: $subjectCode');
-                    final newSubject = Subject(
-                      subName: subjectName,
-                      subCode: subjectCode,
-                      nPresent: 0,
-                      nTotal: 0,
-                      percent: 0.0, key: generateIntKey(),
-                    );
-                    Provider.of<AttendanceProvider>(context, listen: false).addSubject(newSubject);
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const Text(
+            'Add New Subject',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+          ),
+          content: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ItemEntryDialog(
+                    onAddSubject: (subjectName, subjectCode) {
+                      Logger().d(
+                          'Subject Name: $subjectName, Subject Code: $subjectCode');
+                      final newSubject = Subject(
+                        subName: subjectName,
+                        subCode: subjectCode,
+                        nPresent: 0,
+                        nTotal: 0,
+                        percent: 0.0,
+                        key: generateIntKey(),
+                      );
+                      Logger().d(newSubject);
+                      Provider.of<AttendanceProvider>(context, listen: false)
+                          .addSubject(newSubject);
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      );
-    },
-  );
-}
+        );
+      },
+    );
+  }
 
-
-  void _deleteSubject(BuildContext context, Subject subject,int index) {
+  void _deleteSubject(BuildContext context, Subject subject, int index) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -131,7 +136,8 @@ class _AttendanceState extends State<Attendance> {
             ),
             TextButton(
               onPressed: () {
-                Provider.of<AttendanceProvider>(context, listen: false).deleteSubject(subject,index);
+                Provider.of<AttendanceProvider>(context, listen: false)
+                    .deleteSubject(subject, index);
                 Navigator.of(context).pop();
               },
               child: const Text('Delete'),
@@ -150,14 +156,16 @@ class _AttendanceState extends State<Attendance> {
         elevation: 15,
         title: const Text(
           'Attendance Tracker',
-          style: TextStyle(fontStyle: FontStyle.italic, fontWeight: FontWeight.bold),
+          style: TextStyle(
+              fontStyle: FontStyle.italic, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
-              Provider.of<AttendanceProvider>(context, listen: false).fetchSubjects();
+              Provider.of<AttendanceProvider>(context, listen: false)
+                  .fetchSubjects();
             },
           ),
         ],
@@ -169,7 +177,8 @@ class _AttendanceState extends State<Attendance> {
           Image.asset(
             backgroundImagePath,
             fit: BoxFit.cover,
-            color: Colors.black.withOpacity(0.6), // Adjust opacity for better readability
+            color: Colors.black
+                .withOpacity(0.6), // Adjust opacity for better readability
             colorBlendMode: BlendMode.darken,
           ),
           // Attendance List
@@ -215,26 +224,39 @@ class _AttendanceState extends State<Attendance> {
                 elevation: 4,
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: ListTile(
-                  visualDensity: const VisualDensity(horizontal: 3,vertical: 3),
-                  contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-                  title: Text(subject.subName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 24.0)),
-                  subtitle: Text(subject.subCode, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0)),
+                  visualDensity:
+                      const VisualDensity(horizontal: 3, vertical: 3),
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                  title: Text(subject.subName,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 24.0)),
+                  subtitle: Text(subject.subCode,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 20.0)),
                   shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.only(topLeft: Radius.circular(10), bottomRight: Radius.circular(8)),
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(10),
+                        bottomRight: Radius.circular(8)),
                   ),
                   onTap: () => _onItemTapped(context, subject),
-                  onLongPress: () => _deleteSubject(context, subject,index),
+                  onLongPress: () => _deleteSubject(context, subject, index),
                   trailing: Container(
                     width: 100,
                     height: 100,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(width: 5, color: _getPercentageColor(subject.percent.toInt())),
+                      border: Border.all(
+                          width: 5,
+                          color: _getPercentageColor(subject.percent.toInt())),
                     ),
                     alignment: Alignment.center,
                     child: Text(
                       subject.percent.toStringAsFixed(2),
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black),
+                      style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black),
                     ),
                   ),
                 ),

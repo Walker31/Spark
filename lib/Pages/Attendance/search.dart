@@ -35,7 +35,7 @@ class SearchAttendance extends StatelessWidget {
                 'assets/background_image.jpeg', // Replace with your image path
                 fit: BoxFit.cover,
                 color: Colors.black
-                    .withOpacity(0.6), // Adjust opacity for better readability
+                .withOpacity(0.6), // Adjust opacity for better readability
                 colorBlendMode: BlendMode.darken,
               ),
             ),
@@ -99,7 +99,18 @@ class SearchState extends State<Search> {
   Scaffold layout() {
     _logger.d("_isButtonEnabled: $_isButtonEnabled");
     return Scaffold(
-      body: SingleChildScrollView(
+        body: Stack(
+          fit:StackFit.expand,
+          children: [
+
+          Positioned.fill(
+              child: Image.asset(
+                'assets/background_image.jpeg', // Replace with your image path
+                fit: BoxFit.cover, // Adjust opacity for better readability
+                colorBlendMode: BlendMode.darken,
+              ),
+            ),
+      SingleChildScrollView(
         child: Column(
           children: [
             const SizedBox(height: 16),
@@ -228,7 +239,7 @@ class SearchState extends State<Search> {
           ],
         ),
       ),
-    );
+    ]));
   }
 
   Future<void> _getAttendanceList(String date) async {
@@ -241,9 +252,10 @@ class SearchState extends State<Search> {
         })
         .toList()
         .cast<AttendanceCount>();
-        for (var attendance in attendanceList) {
-          _logger.d('Fetched Attendance: ${attendance.subName} - ${attendance.attend}');
-        }
+    for (var attendance in attendanceList) {
+      _logger.d(
+          'Fetched Attendance: ${attendance.subName} - ${attendance.attend}');
+    }
 
     setState(() {
       _attendanceList = attendanceList;
