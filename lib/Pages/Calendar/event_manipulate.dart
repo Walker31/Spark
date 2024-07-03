@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:realm/realm.dart';
 import 'package:logger/logger.dart';
+import '../../uuid.dart';
 import 'events_model.dart';
-import 'package:uuid/uuid.dart' as uuid;
 
 class AddEventFab extends StatefulWidget {
   final Realm realm;
@@ -25,8 +25,9 @@ class AddEventFabState extends State<AddEventFab> {
   @override
   Widget build(BuildContext context) {
     return FloatingActionButton(
+      heroTag: "add_event",
       onPressed: () => _showAddEventDialog(context),
-      child: const Icon(Icons.add),
+      child: const Icon(Icons.event_note),
     );
   }
 
@@ -37,19 +38,16 @@ class AddEventFabState extends State<AddEventFab> {
     DateTime eventDate = DateTime.now();
     TimeOfDay eventTime = TimeOfDay.now();
 
-    const uuidUuid = uuid.Uuid();
-
-    String generateUuid() {
-      return uuidUuid.v4();
-    }
-
     showDialog(
       context: context,
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: const Text('Add New Event'),
+              title: const Text(
+                'Add New Event',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               content: Form(
                 key: formKey,
                 child: SingleChildScrollView(
@@ -57,8 +55,13 @@ class AddEventFabState extends State<AddEventFab> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       TextFormField(
-                        decoration:
-                            const InputDecoration(labelText: 'Subject Name'),
+                        decoration: InputDecoration(
+                          labelText: 'Subject Name',
+                          labelStyle: TextStyle(color: Colors.blue.shade700),
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.blue.shade700),
+                          ),
+                        ),
                         onSaved: (value) {
                           subjectName = value!;
                         },
@@ -69,32 +72,45 @@ class AddEventFabState extends State<AddEventFab> {
                           return null;
                         },
                       ),
+                      const SizedBox(height: 10),
                       DropdownButtonFormField<String>(
                         value: eventType,
-                        decoration:
-                            const InputDecoration(labelText: 'Event Type'),
+                        decoration: InputDecoration(
+                          labelText: 'Event Type',
+                          labelStyle: TextStyle(color: Colors.blue.shade700),
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.blue.shade700),
+                          ),
+                        ),
                         items: [
                           'Extra Class',
                           'Assignment Submission',
                           'Exam',
                           'Others'
-                        ]
-                            .map((type) => DropdownMenuItem<String>(
-                                  value: type,
-                                  child: Text(type),
-                                ))
-                            .toList(),
+                        ].map((type) {
+                          return DropdownMenuItem<String>(
+                            value: type,
+                            child: Text(type),
+                          );
+                        }).toList(),
                         onChanged: (value) {
                           setState(() {
                             eventType = value!;
                           });
                         },
                       ),
+                      const SizedBox(height: 10),
                       TextFormField(
-                        decoration:
-                            const InputDecoration(labelText: 'Event Date'),
+                        decoration: InputDecoration(
+                          labelText: 'Event Date',
+                          labelStyle: TextStyle(color: Colors.blue.shade700),
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.blue.shade700),
+                          ),
+                        ),
                         controller: TextEditingController(
-                            text: DateFormat('yyyy-MM-dd').format(eventDate)),
+                          text: DateFormat('yyyy-MM-dd').format(eventDate),
+                        ),
                         readOnly: true,
                         onTap: () async {
                           DateTime? picked = await showDatePicker(
@@ -110,11 +126,18 @@ class AddEventFabState extends State<AddEventFab> {
                           }
                         },
                       ),
+                      const SizedBox(height: 10),
                       TextFormField(
-                        decoration:
-                            const InputDecoration(labelText: 'Event Time'),
+                        decoration: InputDecoration(
+                          labelText: 'Event Time',
+                          labelStyle: TextStyle(color: Colors.blue.shade700),
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.blue.shade700),
+                          ),
+                        ),
                         controller: TextEditingController(
-                            text: eventTime.format(context)),
+                          text: eventTime.format(context),
+                        ),
                         readOnly: true,
                         onTap: () async {
                           TimeOfDay? picked = await showTimePicker(
@@ -137,17 +160,22 @@ class AddEventFabState extends State<AddEventFab> {
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: const Text('Cancel'),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: Colors.grey),
+                  ),
                 ),
                 ElevatedButton(
                   onPressed: () {
                     if (formKey.currentState!.validate()) {
                       formKey.currentState!.save();
-                      String id = generateUuid();
-                      _addEvent(id, subjectName, eventType, eventDate, eventTime);
+                      _addEvent(Utils.generateUuid(), subjectName, eventType, eventDate, eventTime);
                       Navigator.of(context).pop();
                     }
                   },
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.blue.shade700,
+                  ),
                   child: const Text('Add'),
                 ),
               ],
@@ -158,9 +186,7 @@ class AddEventFabState extends State<AddEventFab> {
     );
   }
 
-
-  void _addEvent(String id, String subjectName, String eventType,DateTime eventDate, TimeOfDay eventTime) {
-
+  void _addEvent(String id, String subjectName, String eventType, DateTime eventDate, TimeOfDay eventTime) {
     final eventDateTime = DateTime(
       eventDate.year,
       eventDate.month,

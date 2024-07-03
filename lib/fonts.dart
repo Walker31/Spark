@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-const String fontFamily = 'Poppins';
+const String fontFamily = 'Caveat';
 
 var appTextTheme = const TextTheme(
   displayLarge: TextStyle(

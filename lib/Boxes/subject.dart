@@ -30,4 +30,15 @@ class Subject {
 
   @HiveField(5) // Add this annotation
   int key; // Add this field
+
+  Map<String, dynamic> toJson() {
+    return {
+      'subName': subName,
+      'subCode': subCode,
+      'nPresent': nPresent,
+      'nTotal': nTotal,
+      'percent': percent,
+      'key': key,
+    };
+  }
 }

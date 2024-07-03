@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:realm/realm.dart';
+import 'package:spark/Pages/Calendar/expandable_fab.dart';
 import 'package:spark/Pages/Calendar/time_table.dart';
 import 'calendar_card.dart';
 import 'events_model.dart';
@@ -41,7 +42,8 @@ class _CalendarPageState extends State<CalendarPage> {
       });
       fetchEvents(date, _selectedIndex);
     });
-    final config2 =Configuration.local([Event.schema, Schedule.schema], schemaVersion: 5);
+    final config2 =
+        Configuration.local([Event.schema, Schedule.schema], schemaVersion: 5);
 
     realm = Realm(config2);
     fetchEvents(DateTime.now().toString(), _selectedIndex);
@@ -63,7 +65,8 @@ class _CalendarPageState extends State<CalendarPage> {
     setState(() {
       _isLoading = true;
     });
-    logger.d('Fetching events for date: $selectedDate with filter index: $selectedIndex');
+    logger.d(
+        'Fetching events for date: $selectedDate with filter index: $selectedIndex');
 
     try {
       DateTime dateTime = DateTime.parse(selectedDate);
@@ -73,12 +76,13 @@ class _CalendarPageState extends State<CalendarPage> {
       var fetchedEvents = <dynamic>[];
 
       if (_selectedIndex == 0) {
-      fetchedEvents.addAll(realm.all<Event>().where((event) {
-        logger.d('Event found: ${event.id}, date: ${DateFormat('yyyy-MM-dd').format(event.eventDate)}, SubjectName: ${event.subjectName}');
-        return DateFormat('yyyy-MM-dd').format(event.eventDate) == date;
-      }));
-      fetchedEvents.addAll(
-          realm.all<Schedule>().where((schedule) => schedule.day == day));
+        fetchedEvents.addAll(realm.all<Event>().where((event) {
+          logger.d(
+              'Event found: ${event.id}, date: ${DateFormat('yyyy-MM-dd').format(event.eventDate)}, SubjectName: ${event.subjectName}');
+          return DateFormat('yyyy-MM-dd').format(event.eventDate) == date;
+        }));
+        fetchedEvents.addAll(
+            realm.all<Schedule>().where((schedule) => schedule.day == day));
       } else {
         fetchedEvents.addAll(realm.all<Event>().where((event) =>
             DateFormat('yyyy-MM-dd').format(event.eventDate) == date &&
@@ -157,86 +161,111 @@ class _CalendarPageState extends State<CalendarPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Calendar'),
-        actions: [
-          AddTimeTable(realm: realm, onScheduleUpdated: _refreshEvents)
-        ],
+        title: const Text(
+          'Calendar',
+          style: TextStyle(fontFamily: 'Poppins', fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.blue.shade700,
       ),
-      body: ListView(
-        children: [
-          const SizedBox(height: 10),
-          CalendarCard(streamController: _streamController),
-          const SizedBox(height: 5),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text("Schedule",
-                    style:
-                        TextStyle(fontSize: 24, fontStyle: FontStyle.italic)),
-                _buildFilterButton(),
-              ],
+      body: Stack(children: [
+        Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage("assets/background_image.jpeg"),
+              fit: BoxFit.cover,
             ),
           ),
-          const SizedBox(height: 5),
-          _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : events.isEmpty
-                  ? const Column(
-                      children: [
-                        SizedBox(height: 20),
-                        Center(
-                            child: Text("You don't have anything right now.")),
-                      ],
-                    )
-                  : EventList(
-                      events: events,
-                      realm: realm,
-                      onDelete: (int id) {
-                        setState(() {
-                          _deleteEvent(id);
-                          _refreshEvents();
-                        });
-                      })
-        ],
-      ),
-      floatingActionButton: AddEventFab(
-        realm: realm,
-        onEventAdded: _refreshEvents,
-      ),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.black.withOpacity(0.7),
+                Colors.black.withOpacity(0.3),
+              ],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+        ),
+        ListView(
+          children: [
+            const SizedBox(height: 10),
+            CalendarCard(streamController: _streamController),
+            const SizedBox(height: 5),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text("Schedule",
+                      style:
+                          TextStyle(fontSize: 24, fontStyle: FontStyle.italic)),
+                  _buildFilterButton(),
+                ],
+              ),
+            ),
+            const SizedBox(height: 5),
+            _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : events.isEmpty
+                    ? const Column(
+                        children: [
+                          SizedBox(height: 20),
+                          Center(
+                              child:
+                                  Text("You don't have anything right now.")),
+                        ],
+                      )
+                    : EventList(
+                        events: events,
+                        realm: realm,
+                        onDelete: (int id) {
+                          setState(() {
+                            _deleteEvent(id);
+                            _refreshEvents();
+                          });
+                        })
+          ],
+        ),
+      ]),
+      floatingActionButton: ExpandableFab(distance: 80,
+       children: [
+        AddEventFab(realm: realm, onEventAdded: _refreshEvents),
+        AddTimeTable(realm: realm, onScheduleUpdated: _refreshEvents)
+       ]
+       )
     );
   }
 
   void _deleteEvent(int id) {
-  // Try to find and delete the event in the Event collection
-  final event = realm.find<Event>(id);
-  if (event != null) {
-    logger.d("Event found: $id. Deleting...");
-    realm.write(() {
-      realm.delete(event);
-    });
-    logger.d("Event deleted from Event collection: $id");
-  } else {
-    logger.w("Event with id $id not found in Event collection");
+    // Try to find and delete the event in the Event collection
+    final event = realm.find<Event>(id);
+    if (event != null) {
+      logger.d("Event found: $id. Deleting...");
+      realm.write(() {
+        realm.delete(event);
+      });
+      logger.d("Event deleted from Event collection: $id");
+    } else {
+      logger.w("Event with id $id not found in Event collection");
+    }
+
+    // Try to find and delete the event in the Schedule collection
+    final schedule = realm.find<Schedule>(id);
+    if (schedule != null) {
+      logger.d("Schedule found: $id. Deleting...");
+      realm.write(() {
+        realm.delete(schedule);
+      });
+      logger.d("Event deleted from Schedule collection: $id");
+    } else {
+      logger.w("Event with id $id not found in Schedule collection");
+    }
+
+    // Refresh events after deletion
+    _refreshEvents();
   }
-
-  // Try to find and delete the event in the Schedule collection
-  final schedule = realm.find<Schedule>(id);
-  if (schedule != null) {
-    logger.d("Schedule found: $id. Deleting...");
-    realm.write(() {
-      realm.delete(schedule);
-    });
-    logger.d("Event deleted from Schedule collection: $id");
-  } else {
-    logger.w("Event with id $id not found in Schedule collection");
-  }
-
-  // Refresh events after deletion
-  _refreshEvents();
-}
-
 }
 
 class EventList extends StatelessWidget {
@@ -251,12 +280,11 @@ class EventList extends StatelessWidget {
     required this.onDelete,
   });
 
-
   @override
   Widget build(BuildContext context) {
-
-    Logger logger = Logger();
+    final Logger logger = Logger();
     logger.d('Rendering EventList with ${events.length} events');
+
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: ListView.builder(
@@ -276,24 +304,37 @@ class EventList extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
               ),
               elevation: 5,
+              color: Colors.blueAccent.withOpacity(0.8),
               child: ListTile(
                 onLongPress: () {
                   _showDeleteDialog(context, event.id);
                 },
                 title: Text(
                   event.subjectName,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Poppins',
+                    color: Colors.black, // Match color scheme
+                  ),
                 ),
                 subtitle: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       event.eventType,
-                      style: const TextStyle(fontStyle: FontStyle.italic),
+                      style: const TextStyle(
+                        fontStyle: FontStyle.italic,
+                        fontFamily: 'Poppins',
+                        color: Colors.black87, // Match color scheme
+                      ),
                     ),
                     Text(
                       formattedTime,
-                      style: const TextStyle(fontStyle: FontStyle.italic),
+                      style: const TextStyle(
+                        fontStyle: FontStyle.italic,
+                        fontFamily: 'Poppins',
+                        color: Colors.black87, // Match color scheme
+                      ),
                     ),
                   ],
                 ),

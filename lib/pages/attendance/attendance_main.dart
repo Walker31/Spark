@@ -1,5 +1,4 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:logger/logger.dart';
@@ -8,7 +7,6 @@ import '../../Providers/attendance_provider.dart';
 import '../../Widgets/add_subject.dart';
 import 'details.dart';
 import 'search.dart';
-import 'package:uuid/uuid.dart' as uuid;
 
 const String backgroundImagePath = 'assets/background_image.jpeg';
 const Color loadingIndicatorColor = Color.fromARGB(255, 6, 139, 55);
@@ -24,13 +22,9 @@ class _AttendanceState extends State<Attendance> {
   @override
   void initState() {
     super.initState();
-    Provider.of<AttendanceProvider>(context, listen: false).fetchSubjects();
-  }
-
-  final uuidUuid = const uuid.Uuid();
-
-  String generateUuid() {
-    return uuidUuid.v4();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<AttendanceProvider>(context, listen: false).fetchSubjects();
+    });
   }
 
   void _onItemTapped(BuildContext context, Subject item) {
@@ -44,7 +38,8 @@ class _AttendanceState extends State<Attendance> {
           } catch (e) {
             logger.d('Error navigating to DetailScreen: $e');
             return const Scaffold(
-                body: Center(child: Text('Error loading details')));
+              body: Center(child: Text('Error loading details'))
+            );
           }
         },
       ),
@@ -70,9 +65,7 @@ class _AttendanceState extends State<Attendance> {
 
   void _navigateToItemEntry(BuildContext context) {
     final Random random = Random();
-
     int generateIntKey() {
-      // Generate a random integer between 1 and 1000000 (inclusive)
       return random.nextInt(1000000) + 1;
     }
 
@@ -96,7 +89,8 @@ class _AttendanceState extends State<Attendance> {
                   ItemEntryDialog(
                     onAddSubject: (subjectName, subjectCode) {
                       Logger().d(
-                          'Subject Name: $subjectName, Subject Code: $subjectCode');
+                        'Subject Name: $subjectName, Subject Code: $subjectCode'
+                      );
                       final newSubject = Subject(
                         subName: subjectName,
                         subCode: subjectCode,
@@ -157,7 +151,7 @@ class _AttendanceState extends State<Attendance> {
         title: const Text(
           'Attendance Tracker',
           style: TextStyle(
-              fontStyle: FontStyle.italic, fontWeight: FontWeight.bold),
+            fontStyle: FontStyle.italic, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         actions: [
@@ -211,6 +205,8 @@ class _AttendanceState extends State<Attendance> {
   }
 
   Widget _buildBody() {
+    final Logger logger = Logger();
+    
     return Consumer<AttendanceProvider>(
       builder: (context, attendanceProvider, child) {
         if (attendanceProvider.subjects.isEmpty) {
@@ -220,6 +216,7 @@ class _AttendanceState extends State<Attendance> {
             itemCount: attendanceProvider.subjects.length,
             itemBuilder: (context, index) {
               final subject = attendanceProvider.subjects[index];
+              logger.d('Subject $index: Name - ${subject.subName}, Code - ${subject.subCode}, Present - ${subject.nPresent}, Total - ${subject.nTotal}, Percent - ${subject.percent}');
               return Card(
                 elevation: 4,
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

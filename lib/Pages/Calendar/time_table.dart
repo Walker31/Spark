@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:realm/realm.dart';
 import 'package:logger/logger.dart';
+import '../../uuid.dart';
 import 'events_model.dart';
-import 'package:uuid/uuid.dart' as uuid;
-
 
 class AddTimeTable extends StatefulWidget {
   final Realm realm;
@@ -24,16 +23,11 @@ class AddScheduleState extends State<AddTimeTable> {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
+    return FloatingActionButton(
+      heroTag: "add_timetable_fab",
       onPressed: () => _showAddEventDialog(context),
-      icon: const Icon(Icons.add),
+      child: const Icon(Icons.class_outlined),
     );
-  }
-
-  final uuidUuid = const uuid.Uuid();
-
-  String _generateUuid() {
-    return uuidUuid.v4();
   }
 
   void _showAddEventDialog(BuildContext context) {
@@ -49,7 +43,10 @@ class AddScheduleState extends State<AddTimeTable> {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: const Text('Add Schedule'),
+              title: const Text(
+                'Add Schedule',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               content: Form(
                 key: formKey,
                 child: SingleChildScrollView(
@@ -57,8 +54,13 @@ class AddScheduleState extends State<AddTimeTable> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       TextFormField(
-                        decoration:
-                            const InputDecoration(labelText: 'Subject Name'),
+                        decoration: InputDecoration(
+                          labelText: 'Subject Name',
+                          labelStyle: TextStyle(color: Colors.blue.shade700),
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.blue.shade700),
+                          ),
+                        ),
                         onSaved: (value) {
                           subjectName = value!;
                         },
@@ -69,50 +71,71 @@ class AddScheduleState extends State<AddTimeTable> {
                           return null;
                         },
                       ),
+                      const SizedBox(height: 10),
                       DropdownButtonFormField<String>(
                         value: eventType,
-                        decoration:
-                            const InputDecoration(labelText: 'Event Type'),
+                        decoration: InputDecoration(
+                          labelText: 'Event Type',
+                          labelStyle: TextStyle(color: Colors.blue.shade700),
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.blue.shade700),
+                          ),
+                        ),
                         items: [
                           'Class',
                           'Lab',
-                        ]
-                            .map((type) => DropdownMenuItem<String>(
-                                  value: type,
-                                  child: Text(type),
-                                ))
-                            .toList(),
+                        ].map((type) {
+                          return DropdownMenuItem<String>(
+                            value: type,
+                            child: Text(type),
+                          );
+                        }).toList(),
                         onChanged: (value) {
                           setState(() {
                             eventType = value!;
                           });
                         },
                       ),
+                      const SizedBox(height: 10),
                       DropdownButtonFormField<String>(
                         value: eventDay,
-                        decoration: const InputDecoration(labelText: 'Day'),
+                        decoration: InputDecoration(
+                          labelText: 'Day',
+                          labelStyle: TextStyle(color: Colors.blue.shade700),
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.blue.shade700),
+                          ),
+                        ),
                         items: [
                           'Monday',
                           'Tuesday',
                           'Wednesday',
                           'Thursday',
                           'Friday'
-                        ]
-                            .map((day) => DropdownMenuItem<String>(
-                                  value: day,
-                                  child: Text(day),
-                                ))
-                            .toList(),
+                        ].map((day) {
+                          return DropdownMenuItem<String>(
+                            value: day,
+                            child: Text(day),
+                          );
+                        }).toList(),
                         onChanged: (value) {
                           setState(() {
                             eventDay = value!;
                           });
                         },
                       ),
+                      const SizedBox(height: 10),
                       TextFormField(
-                        decoration: const InputDecoration(labelText: 'Time:'),
+                        decoration: InputDecoration(
+                          labelText: 'Time',
+                          labelStyle: TextStyle(color: Colors.blue.shade700),
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Colors.blue.shade700),
+                          ),
+                        ),
                         controller: TextEditingController(
-                            text: eventTime.format(context)),
+                          text: eventTime.format(context),
+                        ),
                         readOnly: true,
                         onTap: () async {
                           TimeOfDay? picked = await showTimePicker(
@@ -135,18 +158,23 @@ class AddScheduleState extends State<AddTimeTable> {
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: const Text('Cancel'),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: Colors.grey),
+                  ),
                 ),
                 ElevatedButton(
                   onPressed: () {
                     if (formKey.currentState!.validate()) {
                       formKey.currentState!.save();
-                      String id = _generateUuid();
-                      _addEvent(
-                          id, subjectName, eventType, eventDay, eventTime);
+                      String id = Utils.generateUuid();
+                      _addEvent(id, subjectName, eventType, eventDay, eventTime);
                       Navigator.of(context).pop();
                     }
                   },
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.blue.shade700,
+                  ),
                   child: const Text('Add'),
                 ),
               ],
@@ -156,7 +184,6 @@ class AddScheduleState extends State<AddTimeTable> {
       },
     );
   }
-
 
   void _addEvent(String id, String subjectName, String eventType, String eventDay,
       TimeOfDay eventTime) {
