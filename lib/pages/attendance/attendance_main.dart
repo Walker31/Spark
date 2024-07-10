@@ -38,8 +38,7 @@ class _AttendanceState extends State<Attendance> {
           } catch (e) {
             logger.d('Error navigating to DetailScreen: $e');
             return const Scaffold(
-              body: Center(child: Text('Error loading details'))
-            );
+                body: Center(child: Text('Error loading details')));
           }
         },
       ),
@@ -89,15 +88,14 @@ class _AttendanceState extends State<Attendance> {
                   ItemEntryDialog(
                     onAddSubject: (subjectName, subjectCode) {
                       Logger().d(
-                        'Subject Name: $subjectName, Subject Code: $subjectCode'
-                      );
+                          'Subject Name: $subjectName, Subject Code: $subjectCode');
                       final newSubject = Subject(
                         subName: subjectName,
                         subCode: subjectCode,
                         nPresent: 0,
                         nTotal: 0,
                         percent: 0.0,
-                        key: generateIntKey(),
+                        id: generateIntKey(),
                       );
                       Logger().d(newSubject);
                       Provider.of<AttendanceProvider>(context, listen: false)
@@ -131,7 +129,7 @@ class _AttendanceState extends State<Attendance> {
             TextButton(
               onPressed: () {
                 Provider.of<AttendanceProvider>(context, listen: false)
-                    .deleteSubject(subject, index);
+                    .deleteSubject(subject.id!);
                 Navigator.of(context).pop();
               },
               child: const Text('Delete'),
@@ -151,7 +149,7 @@ class _AttendanceState extends State<Attendance> {
         title: const Text(
           'Attendance Tracker',
           style: TextStyle(
-            fontStyle: FontStyle.italic, fontWeight: FontWeight.bold),
+              fontStyle: FontStyle.italic, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         actions: [
@@ -206,7 +204,7 @@ class _AttendanceState extends State<Attendance> {
 
   Widget _buildBody() {
     final Logger logger = Logger();
-    
+
     return Consumer<AttendanceProvider>(
       builder: (context, attendanceProvider, child) {
         if (attendanceProvider.subjects.isEmpty) {
@@ -216,7 +214,8 @@ class _AttendanceState extends State<Attendance> {
             itemCount: attendanceProvider.subjects.length,
             itemBuilder: (context, index) {
               final subject = attendanceProvider.subjects[index];
-              logger.d('Subject $index: Name - ${subject.subName}, Code - ${subject.subCode}, Present - ${subject.nPresent}, Total - ${subject.nTotal}, Percent - ${subject.percent}');
+              logger.d(
+                  'Subject $index: Name - ${subject.subName}, Code - ${subject.subCode}, Present - ${subject.nPresent}, Total - ${subject.nTotal}, Percent - ${subject.percent}');
               return Card(
                 elevation: 4,
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

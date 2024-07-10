@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import '../../Boxes/attendance_count.dart';
 import '../../Boxes/subject.dart';
 import '../../Providers/attendance_provider.dart';
-import 'package:uuid/uuid.dart' as uuid;
 
 class InsertAttendance extends StatelessWidget {
   final Subject item;
@@ -218,17 +217,10 @@ class EnterState extends State<Enter> {
     return DateFormat('dd/MM/yyyy').format(date);
   }
 
-  final uuidUuid = const uuid.Uuid();
-  String generateUuid() {
-    return uuidUuid.v4();
-  }
-
   void attendance(BuildContext context, bool attend) {
-    String id = generateUuid();
     if (selectedDate != null) {
       try {
         final attendance = AttendanceCount(
-          id: id,
           subName: widget.item.subName,
           date: formatDate(selectedDate!),
           attend: attend,

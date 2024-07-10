@@ -21,7 +21,8 @@ class _CalendarCardState extends State<CalendarCard> {
   }
 
   void _emitSelectedDate(DateTime selectedDate) {
-    widget.streamController.add(selectedDate.toString()); // Emit selected date through stream
+    widget.streamController
+        .add(selectedDate.toString()); // Emit selected date through stream
   }
 
   @override
@@ -29,6 +30,7 @@ class _CalendarCardState extends State<CalendarCard> {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Card(
+        color: Colors.transparent,
         elevation: 4,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
@@ -63,7 +65,8 @@ class _CalendarCardState extends State<CalendarCard> {
                     setState(() {
                       _selectedDate = value;
                     });
-                    _emitSelectedDate(_selectedDate); // Emit selected date when date changes
+                    _emitSelectedDate(
+                        _selectedDate); // Emit selected date when date changes
                   },
                 ),
               ],

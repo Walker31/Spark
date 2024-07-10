@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-
+import 'package:logger/logger.dart';
 import '../models/user.dart';
 
 class UsersProvider extends ChangeNotifier {
+  Logger logger = Logger();
   List<User> _users = [];
   User? _currentUser; // Initial list of users
 
@@ -11,10 +12,11 @@ class UsersProvider extends ChangeNotifier {
     // Simulate fetching data from API or database
     _users = [
       User(
-          userId: 1,
-          userName: "John Doe",
-          password: '',
-          email: "john.doe@example.com",),
+        userId: 1,
+        userName: "John Doe",
+        password: '',
+        email: "john.doe@example.com",
+      ),
       // Add more users here
     ];
     notifyListeners(); // Notify listeners after data is updated
@@ -31,22 +33,25 @@ class UsersProvider extends ChangeNotifier {
   List<User> get users => _users;
 
   // Method to add a new user
-  void addUser(name, phone, email, password) {
+  void addUser(name, email, password) {
     User user = User(
-        userId: _users.length + 1,
-        userName: name,
-        email: email,
-        password: password,);
+      userId: _users.length + 1,
+      userName: name,
+      email: email,
+      password: password,
+    );
     _users.add(user);
+    logger.d(user);
     notifyListeners(); // Notify listeners after data is updated
   }
 
   void setUserDetails(String userName, String email) {
     _currentUser = User(
-        userId: _users.length + 1, // Generate a new userId
-        userName: userName,
-        email: email,
-        password: '',);
+      userId: _users.length + 1, // Generate a new userId
+      userName: userName,
+      email: email,
+      password: '',
+    );
     notifyListeners(); // Notify listeners after data is updated
   }
 
@@ -73,5 +78,4 @@ class UsersProvider extends ChangeNotifier {
   }
 
   bool get isLoggedIn => _currentUser != null;
-
 }

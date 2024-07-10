@@ -1,33 +1,31 @@
-import 'package:hive/hive.dart';
-part 'attendance_count.g.dart';
-
-@HiveType(typeId: 2)
-class AttendanceCount extends HiveObject {
-  @HiveField(0)
-  String id;
-
-  @HiveField(1)
-  final String subName;
-
-  @HiveField(2)
-  final String date;
-
-  @HiveField(3)
-  final bool attend;
+class AttendanceCount {
+  int? id; // Change type to int
+  String subName;
+  String date;
+  bool attend;
 
   AttendanceCount({
-    required this.id,
+    this.id, // Change type to int
     required this.subName,
     required this.date,
     required this.attend,
   });
 
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toMap() {
     return {
-      'id': id,
+      'id': id, // Use int type here
       'subName': subName,
       'date': date,
-      'attend': attend,
+      'attend': attend ? 1 : 0,
     };
+  }
+
+  factory AttendanceCount.fromMap(Map<String, dynamic> map) {
+    return AttendanceCount(
+      id: map['id'], // Should match the database schema type
+      subName: map['subName'],
+      date: map['date'],
+      attend: map['attend'] == 1,
+    );
   }
 }

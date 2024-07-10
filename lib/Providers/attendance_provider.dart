@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
-import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
-import '../../Boxes/subject.dart';
-import '../../Boxes/attendance_count.dart';
+import '../Boxes/attendance_count.dart';
+import '../Boxes/subject.dart';
+import '../Database/database_service.dart';
 
 class AttendanceProvider with ChangeNotifier {
   final Logger logger = Logger();
@@ -13,84 +12,107 @@ class AttendanceProvider with ChangeNotifier {
   List<Subject> get subjects => _subjects;
   List<AttendanceCount> get attendanceList => _attendanceList;
 
+  final DatabaseHelper _databaseHelper = DatabaseHelper.instance;
+
   Future<void> fetchSubjects() async {
-    final box = Hive.box<Subject>('subjects');
-    _subjects = box.values.toList();
-    logger.d('Fetched subjects: ${_subjects.map((subject) => subject.toJson()).toList()}');
-    notifyListeners();
+    try {
+      _subjects = await _databaseHelper.getAllSubjects();
+      logger.d('Fetched subjects: ${_subjects.map((subject) => subject.toMap()).toList()}');
+      notifyListeners();
+    } catch (e) {
+      logger.e('Error fetching subjects: $e');
+    }
   }
 
   Future<void> fetchAttendance(String date) async {
-    final attendanceBox = await Hive.openBox<AttendanceCount>('attendance_counts');
-    
     try {
-      final targetDate = DateFormat("dd/MM/yyyy").parseStrict(date);
-      logger.d('Parsed target date: $targetDate');
-
-      _attendanceList = attendanceBox.values.where((attendance) {
-        try {
-          final attendanceDate = DateFormat("dd/MM/yyyy").parseStrict(attendance.date);
-          return attendanceDate == targetDate;
-        } catch (e) {
-          logger.e("Error parsing attendance date: ${attendance.date}, error: $e");
-          return false;
-        }
-      }).toList();
-
-      logger.d('Fetched attendance for date $date: ${_attendanceList.map((attendance) => attendance.toJson()).toList()}');
+      _attendanceList = await _databaseHelper.getAttendanceByDate(date);
+      logger.d('Fetched attendance for date $date: ${_attendanceList.map((attendance) => attendance.toMap()).toList()}');
+      notifyListeners();
     } catch (e) {
-      logger.e("Error parsing target date: $date, error: $e");
+      logger.e('Error fetching attendance for date $date: $e');
     }
-
-    notifyListeners();
   }
 
   Future<void> addSubject(Subject subject) async {
-    final box = Hive.box<Subject>('subjects');
-    await box.add(subject);
-    _subjects = box.values.toList();
-    logger.d('Added subject: ${subject.toJson()}');
-    logger.d('Current subjects: ${_subjects.map((subject) => subject.toJson()).toList()}');
-    notifyListeners();
+    try {
+      await _databaseHelper.insertSubject(subject);
+      _subjects = await _databaseHelper.getAllSubjects();
+      logger.d('Added subject: ${subject.toMap()}');
+      notifyListeners();
+    } catch (e) {
+      logger.e('Error adding subject: $e');
+    }
   }
 
-  Future<void> deleteSubject(Subject subject, int index) async {
-    final box = Hive.box<Subject>('subjects');
-    await box.delete(subject.key);
-    _subjects = box.values.toList();  // Refresh the list
-    logger.d('Deleted subject at index $index: ${subject.toJson()}');
-    logger.d('Current subjects: ${_subjects.map((subject) => subject.toJson()).toList()}');
-    notifyListeners();  // Notify listeners to update the UI
+  Future<void> deleteSubject(int id) async {
+    try {
+      await _databaseHelper.deleteSubject(id);
+      _subjects = await _databaseHelper.getAllSubjects();
+      logger.d('Deleted subject with ID: $id');
+      notifyListeners();
+    } catch (e) {
+      logger.e('Error deleting subject: $e');
+    }
   }
 
   Future<void> addAttendance(AttendanceCount attendance) async {
-    final attendanceBox = await Hive.openBox<AttendanceCount>('attendance_counts');
-    await attendanceBox.add(attendance);
-    _attendanceList = attendanceBox.values.toList();
-    logger.d('Added attendance: ${attendance.toJson()}');
-    notifyListeners();
-  }
-
-  Future<void> updateSubject(Subject item) async {
     try {
-      final attendanceBox = await Hive.openBox<AttendanceCount>('attendance_counts');
-      final subjectBox = Hive.box<Subject>('subjects');
-
-      final present = attendanceBox.values.where((attendance) => attendance.subName == item.subName && attendance.attend == true).length;
-      final total = attendanceBox.values.where((attendance) => attendance.subName == item.subName).length;
-      final percent = (total > 0) ? (present / total) * 100 : 0.0;
-
-      item.nTotal = total;
-      item.nPresent = present;
-      item.percent = percent;
-      await subjectBox.put(item.key, item);
-
-      _subjects = subjectBox.values.toList();
-      logger.d('Updated subject: ${item.toJson()}');
-      logger.d('Current subjects: ${_subjects.map((subject) => subject.toJson()).toList()}');
+      await _databaseHelper.insertAttendance(attendance);
+      _attendanceList = await _databaseHelper.getAttendanceByDate(attendance.date);
+      logger.d('Added attendance: ${attendance.toMap()}');
+      await updateSubjectsFromAttendance();
       notifyListeners();
     } catch (e) {
-      logger.e("Error updating subject: $e");
+      logger.e('Error adding attendance: $e');
+    }
+  }
+
+  Future<void> updateSubject(Subject subject) async {
+    try {
+      await _databaseHelper.updateSubject(subject);
+      _subjects = await _databaseHelper.getAllSubjects();
+      logger.d('Updated subject: ${subject.toMap()}');
+      notifyListeners();
+    } catch (e) {
+      logger.e('Error updating subject: $e');
+    }
+  }
+
+  Future<void> updateSubjectsFromAttendance() async {
+    try {
+      // Group attendance by subject name
+      Map<String, List<AttendanceCount>> attendanceBySubject = {};
+      for (var attendance in _attendanceList) {
+        if (!attendanceBySubject.containsKey(attendance.subName)) {
+          attendanceBySubject[attendance.subName] = [];
+        }
+        attendanceBySubject[attendance.subName]!.add(attendance);
+      }
+
+      // Update each subject's attendance statistics
+      for (var subjectName in attendanceBySubject.keys) {
+        List<AttendanceCount> attendances = attendanceBySubject[subjectName]!;
+        
+        // Calculate total attendance count
+        int totalAttendance = attendances.where((attendance) => attendance.attend).length;
+
+        // Update the subject's attendance statistics
+        Subject updatedSubject = _subjects.firstWhere((subject) => subject.subName == subjectName);
+        updatedSubject.nPresent = totalAttendance;
+        updatedSubject.nTotal = attendances.length;
+        updatedSubject.percent = (totalAttendance / attendances.length) * 100;
+
+        // Save updated subject to the database
+        await _databaseHelper.updateSubject(updatedSubject);
+      }
+
+      // Fetch updated list of subjects after update
+      _subjects = await _databaseHelper.getAllSubjects();
+      notifyListeners();
+    } catch (e) {
+      logger.e('Error updating subjects from attendance: $e');
     }
   }
 }
+

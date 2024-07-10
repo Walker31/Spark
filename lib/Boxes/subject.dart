@@ -1,44 +1,39 @@
-import 'package:hive_flutter/hive_flutter.dart';
-
-part 'subject.g.dart';
-
-@HiveType(typeId: 1)
 class Subject {
+  int? id; // Nullable for SQLite auto-increment
+  String subName;
+  String subCode;
+  int nPresent;
+  int nTotal;
+  double percent;
+
   Subject({
+    this.id,
     required this.subName,
-    required this.subCode,  
+    required this.subCode,
     required this.nPresent,
     required this.nTotal,
     required this.percent,
-    required this.key, // Add this field
   });
 
-  @HiveField(0)
-  String subName;
-  
-  @HiveField(1)
-  String subCode;
-
-  @HiveField(2)
-  int nPresent;
-
-  @HiveField(3)
-  int nTotal;
-
-  @HiveField(4)
-  double percent;
-
-  @HiveField(5) // Add this annotation
-  int key; // Add this field
-
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toMap() {
     return {
+      'id': id,
       'subName': subName,
       'subCode': subCode,
       'nPresent': nPresent,
       'nTotal': nTotal,
       'percent': percent,
-      'key': key,
     };
+  }
+
+  factory Subject.fromMap(Map<String, dynamic> map) {
+    return Subject(
+      id: map['id'],
+      subName: map['subName'],
+      subCode: map['subCode'],
+      nPresent: map['nPresent'],
+      nTotal: map['nTotal'],
+      percent: map['percent'],
+    );
   }
 }

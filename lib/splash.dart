@@ -23,10 +23,10 @@ class SplashState extends State<Splash> {
           splash: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.flash_on,
-                size: MediaQuery.of(context).size.width * 0.4,
-                color: Colors.yellow,
+              Image.asset(
+                'assets/storm.png',
+                width: 100,
+                height: 100,
               ),
               const SizedBox(height: 20),
               const Text(
@@ -39,7 +39,8 @@ class SplashState extends State<Splash> {
               ),
             ],
           ),
-          nextScreen: userProvider.isLoggedIn ? const HomePage() : const Login(),
+          nextScreen:
+              userProvider.isLoggedIn ? const HomePage() : const Login(),
           splashTransition: SplashTransition.fadeTransition,
           backgroundColor: Colors.black,
           splashIconSize: double.infinity,
