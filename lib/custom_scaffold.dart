@@ -17,6 +17,7 @@ class CustomScaffold extends StatelessWidget {
     const String backgroundImagePath = 'assets/background_image.jpeg';
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
@@ -25,32 +26,32 @@ class CustomScaffold extends StatelessWidget {
             opacity: 0.8,
           ),
         ),
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 500),
-          child: page,
-        ),
-      ),
-      bottomNavigationBar: Opacity(
-        opacity: 0.9,
-        child: BottomNavigationBar(
+        child: Scaffold(
           backgroundColor: Colors.transparent,
-          elevation: 100,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: "Home",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_month_outlined),
-              label: "Attendance",
-            ),
-          ],
-          currentIndex: selectedIndex,
-          onTap: onNavigationItemTapped,
-          iconSize: 30, // Adjust the unselected item font size
-          selectedItemColor:
-              Colors.blueGrey, // Set the color of the selected item
-          unselectedItemColor: Colors.grey,
+          body: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 500),
+            child: page,
+          ),
+          bottomNavigationBar: BottomNavigationBar(
+            backgroundColor: Colors.transparent,
+            items: const [
+              BottomNavigationBarItem(
+                icon: Icon(Icons.home),
+                label: "Calendar",
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.calendar_month_outlined),
+                label: "Attendance",
+              ),
+            ],
+            currentIndex: selectedIndex,
+            onTap: onNavigationItemTapped,
+            iconSize: 30, // Adjust the icon size
+            selectedItemColor:
+                Colors.blueGrey, // Set the color of the selected item
+            unselectedItemColor:
+                Colors.grey, // Set the color of unselected items
+          ),
         ),
       ),
     );

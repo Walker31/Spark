@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import '../../Boxes/attendance_count.dart';
+import '../../Database/database_service.dart';
 import '../../color_schemes.dart';
 import '../../fonts.dart';
 
@@ -12,37 +12,39 @@ class SearchAttendance extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Theme(
-        // Apply light or dark theme based on brightness
-        data: ThemeData.from(
-            colorScheme: Theme.of(context).brightness == Brightness.light
-                ? lightColorScheme
-                : darkColorScheme,
-            textTheme: appTextTheme),
-        child: Scaffold(
-          appBar: AppBar(
-            backgroundColor:
-                Colors.green, // Same background color as the previous page
-            title: const Center(
-              child: Text("Search Attendance",
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
-            centerTitle: true,
+      // Apply light or dark theme based on brightness
+      data: ThemeData.from(
+        colorScheme: Theme.of(context).brightness == Brightness.light
+            ? lightColorScheme
+            : darkColorScheme,
+        textTheme: appTextTheme,
+      ),
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor:
+              Colors.green, // Same background color as the previous page
+          title: const Center(
+            child: Text("Search Attendance",
+                style: TextStyle(fontWeight: FontWeight.bold)),
           ),
-          body: Stack(fit: StackFit.expand, children: [
-            // Background Image
-            Positioned.fill(
-              child: Image.asset(
-                'assets/background_image.jpeg', // Replace with your image path
-                fit: BoxFit.cover,
-                color: Colors.black
-                .withOpacity(0.6), // Adjust opacity for better readability
-                colorBlendMode: BlendMode.darken,
-              ),
+          centerTitle: true,
+        ),
+        body: Stack(fit: StackFit.expand, children: [
+          // Background Image
+          Positioned.fill(
+            child: Image.asset(
+              'assets/background_image.jpeg', // Replace with your image path
+              fit: BoxFit.cover,
+              color: Colors.black
+                  .withOpacity(0.6), // Adjust opacity for better readability
+              colorBlendMode: BlendMode.darken,
             ),
-            // Attendance Search Widget
-            const Search(),
-          ]),
-        ));
+          ),
+          // Attendance Search Widget
+          const Search(),
+        ]),
+      ),
+    );
   }
 }
 
@@ -57,13 +59,9 @@ class SearchState extends State<Search> {
   late TextEditingController _dateController;
   List<AttendanceCount> _attendanceList = [];
   DateTime? selectedDate;
-  bool isFirstEntry = true;
   final Logger _logger = Logger();
   bool _isButtonEnabled = false;
-
-  bool isDateValid() {
-    return selectedDate != null;
-  }
+  final DatabaseHelper _databaseHelper = DatabaseHelper.instance;
 
   @override
   void initState() {
@@ -71,14 +69,18 @@ class SearchState extends State<Search> {
     _dateController = TextEditingController();
   }
 
+  @override
+  void dispose() {
+    _dateController.dispose();
+    super.dispose();
+  }
+
   void showLoadingDialog(BuildContext context) {
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return const Center(
-          child: CircularProgressIndicator(),
-        );
+        return const Center(child: CircularProgressIndicator());
       },
     );
   }
@@ -91,26 +93,30 @@ class SearchState extends State<Search> {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return layout();
+  Future<void> _getAttendanceList() async {
+    if (selectedDate == null) return;
+
+    try {
+      List<AttendanceCount> attendanceList =
+          await _databaseHelper.getAttendanceByDate(selectedDate!);
+      _logger.d('Fetched Attendance: ${attendanceList.length} records');
+
+      if (mounted) {
+        setState(() {
+          _attendanceList = attendanceList;
+        });
+      }
+    } catch (error) {
+      _logger.e('Error fetching attendance: $error');
+      // ignore: use_build_context_synchronously
+      showErrorSnackBar(context, 'Error fetching attendance: $error');
+    }
   }
 
-  Scaffold layout() {
-    _logger.d("_isButtonEnabled: $_isButtonEnabled");
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-        body: Stack(
-          fit:StackFit.expand,
-          children: [
-
-          Positioned.fill(
-              child: Image.asset(
-                'assets/background_image.jpeg', // Replace with your image path
-                fit: BoxFit.cover, // Adjust opacity for better readability
-                colorBlendMode: BlendMode.darken,
-              ),
-            ),
-      SingleChildScrollView(
+      body: SingleChildScrollView(
         child: Column(
           children: [
             const SizedBox(height: 16),
@@ -157,21 +163,11 @@ class SearchState extends State<Search> {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _isButtonEnabled
-                  ? () {
-                      try {
-                        _logger.d("_isButtonEnabled: $_isButtonEnabled");
-                        showLoadingDialog(context);
-                        String date = _dateController.text;
-                        _logger.d(date);
-                        _getAttendanceList(date).catchError((error) {
-                          _logger.e('Error fetching attendance: $error');
-                        }).whenComplete(() {
-                          Navigator.of(context).pop();
-                        });
-                      } catch (error) {
-                        showErrorSnackBar(
-                            context, 'Error fetching attendance: $error');
-                      }
+                  ? () async {
+                      showLoadingDialog(context);
+                      await _getAttendanceList();
+                      // ignore: use_build_context_synchronously
+                      Navigator.of(context).pop();
                     }
                   : null,
               style: ElevatedButton.styleFrom(
@@ -191,6 +187,7 @@ class SearchState extends State<Search> {
                   const SizedBox(height: 16),
                   ListView.builder(
                     shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
                     itemCount: _attendanceList.length,
                     itemBuilder: (BuildContext context, int index) {
                       return Padding(
@@ -239,26 +236,6 @@ class SearchState extends State<Search> {
           ],
         ),
       ),
-    ]));
-  }
-
-  Future<void> _getAttendanceList(String date) async {
-    final attendanceBox = await Hive.openBox('attendanceBox');
-    List<AttendanceCount> attendanceList = attendanceBox.values
-        .where((attendance) {
-          final attendanceDate =
-              DateFormat("dd/MM/yyyy").parse(attendance.date);
-          return attendanceDate == DateFormat("dd/MM/yyyy").parse(date);
-        })
-        .toList()
-        .cast<AttendanceCount>();
-    for (var attendance in attendanceList) {
-      _logger.d(
-          'Fetched Attendance: ${attendance.subName} - ${attendance.attend}');
-    }
-
-    setState(() {
-      _attendanceList = attendanceList;
-    });
+    );
   }
 }

@@ -160,82 +160,85 @@ class _CalendarPageState extends State<CalendarPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Calendar',
-          style: TextStyle(fontFamily: 'Poppins', fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.blue.shade700,
-      ),
-      body: Stack(children: [
-        Container(
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage("assets/background_image.jpeg"),
-              fit: BoxFit.cover,
-            ),
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          centerTitle: true,
+          title: const Text(
+            'C A L E N D A R',
+            style: TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 20,
+                color: Colors.black,
+                fontWeight: FontWeight.bold),
           ),
+          backgroundColor: Colors.blue.shade700,
         ),
-        Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Colors.black.withOpacity(0.7),
-                Colors.black.withOpacity(0.3),
-              ],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
-        ),
-        ListView(
-          children: [
-            const SizedBox(height: 10),
-            CalendarCard(streamController: _streamController),
-            const SizedBox(height: 5),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text("Schedule",
-                      style:
-                          TextStyle(fontSize: 24, fontStyle: FontStyle.italic)),
-                  _buildFilterButton(),
-                ],
+        body: Stack(children: [
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage("assets/background_image.jpeg"),
+                fit: BoxFit.cover,
               ),
             ),
-            const SizedBox(height: 5),
-            _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : events.isEmpty
-                    ? const Column(
-                        children: [
-                          SizedBox(height: 20),
-                          Center(
-                              child:
-                                  Text("You don't have anything right now.")),
-                        ],
-                      )
-                    : EventList(
-                        events: events,
-                        realm: realm,
-                        onDelete: (int id) {
-                          setState(() {
-                            _deleteEvent(id);
-                            _refreshEvents();
-                          });
-                        })
-          ],
-        ),
-      ]),
-      floatingActionButton: ExpandableFab(distance: 80,
-       children: [
-        AddEventFab(realm: realm, onEventAdded: _refreshEvents),
-        AddTimeTable(realm: realm, onScheduleUpdated: _refreshEvents)
-       ]
-       )
-    );
+          ),
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.black.withOpacity(0.7),
+                  Colors.black.withOpacity(0.3),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+          ),
+          ListView(
+            children: [
+              const SizedBox(height: 10),
+              CalendarCard(streamController: _streamController),
+              const SizedBox(height: 5),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text("Schedule",
+                        style: TextStyle(
+                            fontSize: 24, fontStyle: FontStyle.italic)),
+                    _buildFilterButton(),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 5),
+              _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : events.isEmpty
+                      ? const Column(
+                          children: [
+                            SizedBox(height: 20),
+                            Center(
+                                child:
+                                    Text("You don't have anything right now.")),
+                          ],
+                        )
+                      : EventList(
+                          events: events,
+                          realm: realm,
+                          onDelete: (int id) {
+                            setState(() {
+                              _deleteEvent(id);
+                              _refreshEvents();
+                            });
+                          })
+            ],
+          ),
+        ]),
+        floatingActionButton: ExpandableFab(distance: 80, children: [
+          AddEventFab(realm: realm, onEventAdded: _refreshEvents),
+          AddTimeTable(realm: realm, onScheduleUpdated: _refreshEvents)
+        ]));
   }
 
   void _deleteEvent(int id) {

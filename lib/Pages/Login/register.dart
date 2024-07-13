@@ -24,8 +24,24 @@ class RegisterPageState extends State<RegisterPage> {
   String? emailError;
   String? passwordError;
 
+  @override
+  void initState() {
+    super.initState();
+    logger.d("RegisterPage initialized");
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+    logger.d("RegisterPage disposed");
+  }
 
   void _register() async {
+    logger.d("Attempting to register user");
+
     setState(() {
       nameError = nameController.text.isEmpty ? 'Name cannot be empty' : null;
       emailError =
@@ -37,9 +53,16 @@ class RegisterPageState extends State<RegisterPage> {
     // Check if all fields are filled
     if (nameError == null && emailError == null && passwordError == null) {
       try {
+        logger.d("All fields are filled, proceeding with registration");
+
         // Add user to UsersProvider
-        _usersProvider.addUser(nameController.text.trim(),
-            emailController.text.trim(), passwordController.text.trim());
+        _usersProvider.addUser(
+          nameController.text.trim(),
+          emailController.text.trim(),
+          passwordController.text.trim(),
+        );
+
+        logger.d("User added to UsersProvider successfully");
 
         // Registration successful dialog
         showDialog(
@@ -70,6 +93,8 @@ class RegisterPageState extends State<RegisterPage> {
                           MaterialPageRoute(
                               builder: (context) => const Login()),
                         );
+                        logger.d(
+                            "Navigated to LoginPage after successful registration");
                       },
                       child: const Text('OK'),
                     ),
@@ -80,7 +105,8 @@ class RegisterPageState extends State<RegisterPage> {
           },
         );
       } catch (e) {
-        logger.d('Registration Error: $e');
+        logger.e("Registration Error: $e");
+
         // Handle registration errors here
         showDialog(
           context: context,
@@ -91,6 +117,7 @@ class RegisterPageState extends State<RegisterPage> {
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();
+                  logger.d("Error dialog closed");
                 },
                 child: const Text('OK'),
               ),
@@ -98,6 +125,8 @@ class RegisterPageState extends State<RegisterPage> {
           ),
         );
       }
+    } else {
+      logger.w("Validation failed: $nameError, $emailError, $passwordError");
     }
   }
 
@@ -114,6 +143,7 @@ class RegisterPageState extends State<RegisterPage> {
               emailController.clear();
               passwordController.clear();
               Navigator.of(context).pop();
+              logger.d("Navigated back from RegisterPage");
             },
             icon: const Icon(
               Icons.arrow_back_ios,
@@ -126,6 +156,7 @@ class RegisterPageState extends State<RegisterPage> {
               onPressed: () {
                 // Continue as guest logic
                 Navigator.pushReplacementNamed(context, '/home');
+                logger.d("Continued as guest");
               },
               child: const Text(
                 'Continue as guest',
@@ -267,6 +298,7 @@ class RegisterPageState extends State<RegisterPage> {
                           emailController.clear();
                           passwordController.clear();
                           Navigator.pop(context);
+                          logger.d("Navigated to LoginPage from RegisterPage");
                         },
                         child: const Text(
                           'Log in',

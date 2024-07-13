@@ -13,3 +13,5 @@ BoxDecoration appBackgroundDecoration = BoxDecoration(
     end: Alignment.bottomRight,
   ),
 );
+
+const String backgroundImagePath = 'assets/background_image.jpeg';

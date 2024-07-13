@@ -1,11 +1,11 @@
 class AttendanceCount {
-  int? id; // Change type to int
+  int? id; // Id type is int
   String subName;
-  String date;
+  DateTime date;
   bool attend;
 
   AttendanceCount({
-    this.id, // Change type to int
+    this.id, // Id type is int
     required this.subName,
     required this.date,
     required this.attend,
@@ -13,18 +13,18 @@ class AttendanceCount {
 
   Map<String, dynamic> toMap() {
     return {
-      'id': id, // Use int type here
+      'id': id, // Id type is int
       'subName': subName,
-      'date': date,
+      'date': date.toIso8601String(),
       'attend': attend ? 1 : 0,
     };
   }
 
   factory AttendanceCount.fromMap(Map<String, dynamic> map) {
     return AttendanceCount(
-      id: map['id'], // Should match the database schema type
+      id: map['id'], // Id type is int
       subName: map['subName'],
-      date: map['date'],
+      date: DateTime.parse(map['date']),
       attend: map['attend'] == 1,
     );
   }

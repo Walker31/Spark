@@ -36,4 +36,22 @@ class Subject {
       percent: map['percent'],
     );
   }
+
+  Subject copyWith({
+    int? id,
+    String? subName,
+    String? subCode,
+    int? nPresent,
+    int? nTotal,
+    double? percent,
+  }) {
+    return Subject(
+      id: id ?? this.id,
+      subName: subName ?? this.subName,
+      subCode: subCode ?? this.subCode,
+      nPresent: nPresent ?? this.nPresent,
+      nTotal: nTotal ?? this.nTotal,
+      percent: percent ?? this.percent,
+    );
+  }
 }

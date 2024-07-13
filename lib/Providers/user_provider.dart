@@ -5,20 +5,12 @@ import '../models/user.dart';
 class UsersProvider extends ChangeNotifier {
   Logger logger = Logger();
   List<User> _users = [];
-  User? _currentUser; // Initial list of users
+  User? _currentUser;
 
   // Method to fetch users (replace with actual data fetch logic)
   Future<void> fetchUsers() async {
     // Simulate fetching data from API or database
-    _users = [
-      User(
-        userId: 1,
-        userName: "John Doe",
-        password: '',
-        email: "john.doe@example.com",
-      ),
-      // Add more users here
-    ];
+    _users = [];
     notifyListeners(); // Notify listeners after data is updated
   }
 
@@ -33,7 +25,7 @@ class UsersProvider extends ChangeNotifier {
   List<User> get users => _users;
 
   // Method to add a new user
-  void addUser(name, email, password) {
+  void addUser(String name, String email, String password) {
     User user = User(
       userId: _users.length + 1,
       userName: name,
@@ -41,7 +33,7 @@ class UsersProvider extends ChangeNotifier {
       password: password,
     );
     _users.add(user);
-    logger.d(user);
+    logger.d('User added: $user');
     notifyListeners(); // Notify listeners after data is updated
   }
 
@@ -57,12 +49,14 @@ class UsersProvider extends ChangeNotifier {
 
   // Method to update an existing user
   void updateUser(User updatedUser) {
-    // Find and update the user in the list
     final index =
         _users.indexWhere((user) => user.userId == updatedUser.userId);
     if (index != -1) {
       _users[index] = updatedUser;
+      logger.d('User updated: $updatedUser');
       notifyListeners(); // Notify listeners after data is updated
+    } else {
+      logger.w('User not found for update: $updatedUser');
     }
   }
 
@@ -73,7 +67,8 @@ class UsersProvider extends ChangeNotifier {
 
   // Method to delete a user
   void deleteUser(User user) {
-    _users.remove(user);
+    _users.removeWhere((u) => u.userId == user.userId);
+    logger.d('User deleted: $user');
     notifyListeners(); // Notify listeners after data is updated
   }
 

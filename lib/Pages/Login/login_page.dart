@@ -20,6 +20,12 @@ class LoginPageState extends State<Login> {
   static const Color primaryTextColor = Colors.black;
   bool _isLoading = false;
 
+  @override
+  void initState() {
+    super.initState();
+    _usersProvider.fetchUsers();
+  }
+
   Future<void> _login() async {
     setState(() {
       _isLoading = true;
@@ -35,9 +41,6 @@ class LoginPageState extends State<Login> {
 
     if (enteredEmail.isNotEmpty && enteredPassword.isNotEmpty) {
       try {
-        // Fetch users from UsersProvider
-        await _usersProvider.fetchUsers();
-
         // Check if the entered email and password match any user
         User user = _usersProvider.users.firstWhere(
           (user) =>
@@ -77,6 +80,14 @@ class LoginPageState extends State<Login> {
       }
     } else {
       _logger.d('Please enter valid credentials');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter valid credentials.'),
+        ),
+      );
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -86,7 +97,7 @@ class LoginPageState extends State<Login> {
       body: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
-          leading: const Text(''), // Empty leading text to adjust alignment
+          leading: const SizedBox.shrink(), // Empty leading to adjust alignment
           backgroundColor: Colors.transparent,
           actions: [
             // Action button for continuing as a guest
@@ -110,27 +121,25 @@ class LoginPageState extends State<Login> {
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Title row for "Login"
-                const Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Login",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontStyle: FontStyle.italic,
-                        fontFamily: 'Caveat',
-                        fontSize: 56,
-                      ),
-                    ),
-                  ],
+                // Title for "Login"
+                const Text(
+                  "Login",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontStyle: FontStyle.italic,
+                    fontFamily: 'Caveat',
+                    fontSize: 56,
+                  ),
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
+                const SizedBox(height: 10),
                 Container(
                   padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   child: Column(
                     children: [
                       // Email text field
@@ -148,9 +157,7 @@ class LoginPageState extends State<Login> {
                           ),
                         ),
                       ),
-                      const SizedBox(
-                        height: 20,
-                      ),
+                      const SizedBox(height: 20),
                       // Password text field
                       TextField(
                         controller: passwordController,
@@ -170,12 +177,12 @@ class LoginPageState extends State<Login> {
                     ],
                   ),
                 ),
-                const SizedBox(
-                  height: 20,
-                ),
+                const SizedBox(height: 20),
                 // Login button with loading indicator
                 _isLoading
-                    ? const CircularProgressIndicator() // Show loading indicator while logging in
+                    ? const Center(
+                        child:
+                            CircularProgressIndicator()) // Show loading indicator while logging in
                     : SizedBox(
                         width: double.infinity, // Expand button to full width
                         child: Container(
@@ -198,9 +205,7 @@ class LoginPageState extends State<Login> {
                           ),
                         ),
                       ),
-                const SizedBox(
-                  height: 20,
-                ),
+                const SizedBox(height: 20),
                 // Sign up row with "Do not have an account?" and "Sign up" link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

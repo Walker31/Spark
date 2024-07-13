@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:animated_splash_screen/animated_splash_screen.dart';
 import 'package:provider/provider.dart';
-import 'package:spark/Pages/Login/login_page.dart';
 import 'package:spark/Pages/home_screen.dart';
-
 import 'Providers/user_provider.dart';
 
 class Splash extends StatefulWidget {
@@ -40,7 +38,7 @@ class SplashState extends State<Splash> {
             ],
           ),
           nextScreen:
-              userProvider.isLoggedIn ? const HomePage() : const Login(),
+              userProvider.isLoggedIn ? const HomePage() : const HomePage(),
           splashTransition: SplashTransition.fadeTransition,
           backgroundColor: Colors.black,
           splashIconSize: double.infinity,

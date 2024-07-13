@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import '../Boxes/attendance_count.dart';
 import '../Boxes/subject.dart';
@@ -17,20 +18,37 @@ class AttendanceProvider with ChangeNotifier {
   Future<void> fetchSubjects() async {
     try {
       _subjects = await _databaseHelper.getAllSubjects();
-      logger.d('Fetched subjects: ${_subjects.map((subject) => subject.toMap()).toList()}');
+      logger.d(
+          'Fetched subjects: ${_subjects.map((subject) => subject.toMap()).toList()}');
       notifyListeners();
     } catch (e) {
       logger.e('Error fetching subjects: $e');
     }
   }
 
-  Future<void> fetchAttendance(String date) async {
+  String formatDate(DateTime date) {
+    return DateFormat('dd/MM/yyyy').format(date);
+  }
+
+  Future<void> fetchAttendance(DateTime date) async {
     try {
       _attendanceList = await _databaseHelper.getAttendanceByDate(date);
-      logger.d('Fetched attendance for date $date: ${_attendanceList.map((attendance) => attendance.toMap()).toList()}');
+      logger.d(
+          'Fetched attendance for date $date: ${_attendanceList.map((attendance) => attendance.toMap()).toList()}');
       notifyListeners();
     } catch (e) {
       logger.e('Error fetching attendance for date $date: $e');
+    }
+  }
+
+  Future<Subject?> getSubject(int id) async {
+    try {
+      var result = await _databaseHelper.getSubject(id);
+
+      return result;
+    } catch (e) {
+      logger.e('Error fetching subject with ID $id: $e');
+      return null;
     }
   }
 
@@ -45,10 +63,27 @@ class AttendanceProvider with ChangeNotifier {
     }
   }
 
+  Future<List<AttendanceCount>> fetchAttendanceForSubject(
+      String subName) async {
+    try {
+      _attendanceList = await _databaseHelper.getAttendanceBySubject(subName);
+      logger.d(
+          'Fetched attendance for subject $subName: ${_attendanceList.map((attendance) => attendance.toMap()).toList()}');
+      notifyListeners();
+      return _attendanceList; // Ensure to return the fetched list
+    } catch (e) {
+      logger.e('Error fetching attendance for subject $subName: $e');
+      rethrow; // Rethrow the error to propagate it to the caller
+    }
+  }
+
   Future<void> deleteSubject(int id) async {
     try {
-      await _databaseHelper.deleteSubject(id);
+      await _databaseHelper.deleteSubject(
+        id,
+      );
       _subjects = await _databaseHelper.getAllSubjects();
+
       logger.d('Deleted subject with ID: $id');
       notifyListeners();
     } catch (e) {
@@ -59,60 +94,29 @@ class AttendanceProvider with ChangeNotifier {
   Future<void> addAttendance(AttendanceCount attendance) async {
     try {
       await _databaseHelper.insertAttendance(attendance);
-      _attendanceList = await _databaseHelper.getAttendanceByDate(attendance.date);
+      _attendanceList =
+          await _databaseHelper.getAttendanceByDate(attendance.date);
+      await _databaseHelper.updateSubjectAttendance(attendance.subName);
       logger.d('Added attendance: ${attendance.toMap()}');
-      await updateSubjectsFromAttendance();
       notifyListeners();
     } catch (e) {
       logger.e('Error adding attendance: $e');
     }
   }
 
-  Future<void> updateSubject(Subject subject) async {
+  Future<void> deleteAttendance(int id) async {
     try {
-      await _databaseHelper.updateSubject(subject);
-      _subjects = await _databaseHelper.getAllSubjects();
-      logger.d('Updated subject: ${subject.toMap()}');
+      await _databaseHelper.deleteAttendance(id);
+      _attendanceList =
+          await _databaseHelper.getAttendanceByDate(DateTime.now());
+      logger.d('Deleted attendance with ID: $id');
       notifyListeners();
     } catch (e) {
-      logger.e('Error updating subject: $e');
+      logger.e('Error deleting attendance: $e');
     }
   }
 
-  Future<void> updateSubjectsFromAttendance() async {
-    try {
-      // Group attendance by subject name
-      Map<String, List<AttendanceCount>> attendanceBySubject = {};
-      for (var attendance in _attendanceList) {
-        if (!attendanceBySubject.containsKey(attendance.subName)) {
-          attendanceBySubject[attendance.subName] = [];
-        }
-        attendanceBySubject[attendance.subName]!.add(attendance);
-      }
+  updateSubject(Subject updatedSubject) {}
 
-      // Update each subject's attendance statistics
-      for (var subjectName in attendanceBySubject.keys) {
-        List<AttendanceCount> attendances = attendanceBySubject[subjectName]!;
-        
-        // Calculate total attendance count
-        int totalAttendance = attendances.where((attendance) => attendance.attend).length;
-
-        // Update the subject's attendance statistics
-        Subject updatedSubject = _subjects.firstWhere((subject) => subject.subName == subjectName);
-        updatedSubject.nPresent = totalAttendance;
-        updatedSubject.nTotal = attendances.length;
-        updatedSubject.percent = (totalAttendance / attendances.length) * 100;
-
-        // Save updated subject to the database
-        await _databaseHelper.updateSubject(updatedSubject);
-      }
-
-      // Fetch updated list of subjects after update
-      _subjects = await _databaseHelper.getAllSubjects();
-      notifyListeners();
-    } catch (e) {
-      logger.e('Error updating subjects from attendance: $e');
-    }
-  }
+  // Add additional methods to delete all attendance and subjects if needed
 }
-
