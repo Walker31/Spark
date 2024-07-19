@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
-import '../../Boxes/attendance_count.dart';
-import '../../Boxes/subject.dart';
 import '../../Database/database_service.dart';
+import '../../Models/attendance_count.dart';
+import '../../Models/subject.dart';
 import '../../Providers/attendance_provider.dart';
 
 class InsertAttendance extends StatelessWidget {
@@ -29,7 +29,7 @@ class InsertAttendance extends StatelessWidget {
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios),
+              icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
               onPressed: () {
                 Navigator.of(context).pop();
               }),
@@ -38,9 +38,9 @@ class InsertAttendance extends StatelessWidget {
           title: const Text(
             "A T T E N D A N C E",
             style: TextStyle(
-              fontStyle: FontStyle.italic,
-              fontWeight: FontWeight.bold,
-            ),
+                fontStyle: FontStyle.italic,
+                fontWeight: FontWeight.bold,
+                color: Colors.black),
           ),
           centerTitle: true,
         ),
@@ -99,7 +99,7 @@ class EnterState extends State<Enter> {
 
   Widget buildCard() {
     return Card(
-      elevation: 4,
+      elevation: 6,
       margin: const EdgeInsets.symmetric(vertical: 8),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
@@ -187,12 +187,13 @@ class EnterState extends State<Enter> {
         ElevatedButton(
           onPressed: isDateValid() ? () => attendance(context, true) : null,
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.green,
+            backgroundColor: Colors.green, // Background color when enabled
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-            fixedSize: const Size(120, 50),
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+            minimumSize: const Size(140, 50),
+            elevation: 4, // Shadow elevation
           ),
           child: const Text(
             'Present',
@@ -202,12 +203,13 @@ class EnterState extends State<Enter> {
         ElevatedButton(
           onPressed: isDateValid() ? () => attendance(context, false) : null,
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red,
+            backgroundColor: Colors.red, // Background color when enabled
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-            fixedSize: const Size(120, 50),
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+            minimumSize: const Size(140, 50),
+            elevation: 4, // Shadow elevation
           ),
           child: const Text(
             "Absent",

@@ -1,50 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
-import '../../Boxes/attendance_count.dart';
 import '../../Database/database_service.dart';
-import '../../color_schemes.dart';
-import '../../fonts.dart';
+import '../../Models/attendance_count.dart';
 
 class SearchAttendance extends StatelessWidget {
   const SearchAttendance({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Theme(
-      // Apply light or dark theme based on brightness
-      data: ThemeData.from(
-        colorScheme: Theme.of(context).brightness == Brightness.light
-            ? lightColorScheme
-            : darkColorScheme,
-        textTheme: appTextTheme,
-      ),
-      child: Scaffold(
-        appBar: AppBar(
-          backgroundColor:
-              Colors.green, // Same background color as the previous page
-          title: const Center(
-            child: Text("Search Attendance",
-                style: TextStyle(fontWeight: FontWeight.bold)),
-          ),
-          centerTitle: true,
-        ),
-        body: Stack(fit: StackFit.expand, children: [
-          // Background Image
-          Positioned.fill(
-            child: Image.asset(
-              'assets/background_image.jpeg', // Replace with your image path
-              fit: BoxFit.cover,
-              color: Colors.black
-                  .withOpacity(0.6), // Adjust opacity for better readability
-              colorBlendMode: BlendMode.darken,
+    const String backgroundImagePath = 'assets/background_image.jpeg';
+
+    return Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: const AssetImage(backgroundImagePath),
+                fit: BoxFit.cover,
+                colorFilter: ColorFilter.mode(
+                  Colors.black.withOpacity(0.8),
+                  BlendMode.dstATop,
+                ),
+                opacity: 0.8,
+              ),
             ),
-          ),
-          // Attendance Search Widget
-          const Search(),
-        ]),
-      ),
-    );
+            child: const Search()));
   }
 }
 
@@ -116,6 +97,26 @@ class SearchState extends State<Search> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios,
+            color: Colors.blueGrey,
+          ),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        backgroundColor:
+            Colors.transparent, // Same background color as the previous page
+        title: const Center(
+          child: Text("Search Attendance",
+              style: TextStyle(
+                  fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+        ),
+        centerTitle: true,
+      ),
+      backgroundColor: Colors.transparent,
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -123,18 +124,18 @@ class SearchState extends State<Search> {
             Container(
               height: 70,
               padding: const EdgeInsets.all(8.0),
+              margin: const EdgeInsets.only(left: 24, right: 24),
               child: TextFormField(
                 controller: _dateController,
                 scrollPadding: const EdgeInsets.all(20.0),
                 decoration: InputDecoration(
-                  labelText: "Date",
-                  hintText: "Enter Class's Date",
+                  prefixIcon: const Icon(Icons.calendar_today,
+                      color: Colors.blueAccent),
+                  hintText: "Enter Date to Search",
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10.0),
                   ),
-                  filled: true,
-                  contentPadding: const EdgeInsets.symmetric(
-                      vertical: 20.0, horizontal: 12.0),
+                  filled: false,
                 ),
                 readOnly: true,
                 onTap: () async {

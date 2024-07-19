@@ -28,7 +28,7 @@ class SplashState extends State<Splash> {
               ),
               const SizedBox(height: 20),
               const Text(
-                'Spark',
+                'S P A R K',
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,

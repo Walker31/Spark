@@ -36,11 +36,11 @@ class CustomScaffold extends StatelessWidget {
             backgroundColor: Colors.transparent,
             items: const [
               BottomNavigationBarItem(
-                icon: Icon(Icons.home),
+                icon: Icon(Icons.calendar_month_outlined),
                 label: "Calendar",
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.calendar_month_outlined),
+                icon: Icon(Icons.notes),
                 label: "Attendance",
               ),
             ],

@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
-import '../../Boxes/attendance_count.dart';
-import '../../Boxes/subject.dart';
+import '../../Models/attendance_count.dart';
+import '../../Models/subject.dart';
 import '../../Providers/attendance_provider.dart';
 import '../../Widgets/background.dart';
 

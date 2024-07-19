@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
-import '../Boxes/attendance_count.dart';
-import '../Boxes/subject.dart';
+import '../Models/attendance_count.dart';
+import '../Models/subject.dart';
 import '../Database/database_service.dart';
 
 class AttendanceProvider with ChangeNotifier {

@@ -6,6 +6,7 @@ import 'package:realm/realm.dart';
 import 'package:spark/Pages/Calendar/expandable_fab.dart';
 import 'package:spark/Pages/Calendar/time_table.dart';
 import 'calendar_card.dart';
+import 'event_list.dart';
 import 'events_model.dart';
 import 'event_manipulate.dart';
 
@@ -160,88 +161,71 @@ class _CalendarPageState extends State<CalendarPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        backgroundColor: Colors.transparent,
         appBar: AppBar(
+          backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
           centerTitle: true,
           title: const Text(
             'C A L E N D A R',
             style: TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 20,
-                color: Colors.black,
+                fontSize: 24,
+                color: Colors.blueGrey,
                 fontWeight: FontWeight.bold),
           ),
-          backgroundColor: Colors.blue.shade700,
         ),
-        body: Stack(children: [
-          Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage("assets/background_image.jpeg"),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.black.withOpacity(0.7),
-                  Colors.black.withOpacity(0.3),
+        body: ListView(
+          children: [
+            const SizedBox(height: 10),
+            CalendarCard(streamController: _streamController),
+            const SizedBox(height: 5),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text("Schedule",
+                      style:
+                          TextStyle(fontSize: 24, fontStyle: FontStyle.italic)),
+                  _buildFilterButton(),
                 ],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
               ),
             ),
-          ),
-          ListView(
-            children: [
-              const SizedBox(height: 10),
-              CalendarCard(streamController: _streamController),
-              const SizedBox(height: 5),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text("Schedule",
-                        style: TextStyle(
-                            fontSize: 24, fontStyle: FontStyle.italic)),
-                    _buildFilterButton(),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 5),
-              _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : events.isEmpty
-                      ? const Column(
-                          children: [
-                            SizedBox(height: 20),
-                            Center(
-                                child:
-                                    Text("You don't have anything right now.")),
-                          ],
-                        )
-                      : EventList(
-                          events: events,
-                          realm: realm,
-                          onDelete: (int id) {
-                            setState(() {
-                              _deleteEvent(id);
-                              _refreshEvents();
-                            });
-                          })
-            ],
-          ),
-        ]),
+            const SizedBox(height: 5),
+            _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : events.isEmpty
+                    ? const Column(
+                        children: [
+                          SizedBox(height: 20),
+                          Center(
+                              child:
+                                  Text("You don't have anything right now.")),
+                        ],
+                      )
+                    : EventList(
+                        events: events,
+                        realm: realm,
+                        onDelete: (String id) {
+                          setState(() {
+                            _deleteEvent(id);
+                            _refreshEvents();
+                          });
+                        },
+                        onEdit: () {
+                          setState(() {
+                            _refreshEvents();
+                          });
+                        })
+          ],
+        ),
         floatingActionButton: ExpandableFab(distance: 80, children: [
           AddEventFab(realm: realm, onEventAdded: _refreshEvents),
           AddTimeTable(realm: realm, onScheduleUpdated: _refreshEvents)
         ]));
   }
 
-  void _deleteEvent(int id) {
+  void _deleteEvent(String id) {
     // Try to find and delete the event in the Event collection
     final event = realm.find<Event>(id);
     if (event != null) {
@@ -271,108 +255,3 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 }
 
-class EventList extends StatelessWidget {
-  final List<dynamic> events;
-  final Realm realm;
-  final void Function(int id) onDelete;
-
-  const EventList({
-    super.key,
-    required this.events,
-    required this.realm,
-    required this.onDelete,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final Logger logger = Logger();
-    logger.d('Rendering EventList with ${events.length} events');
-
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: ListView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        itemCount: events.length,
-        itemBuilder: (context, index) {
-          final event = events[index];
-          final eventTime = event.eventTime.toLocal();
-          final formattedTime = DateFormat.jm().format(eventTime);
-          logger.d('Rendering event: ${event.id}, ${event.subjectName}');
-
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              elevation: 5,
-              color: Colors.blueAccent.withOpacity(0.8),
-              child: ListTile(
-                onLongPress: () {
-                  _showDeleteDialog(context, event.id);
-                },
-                title: Text(
-                  event.subjectName,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Poppins',
-                    color: Colors.black, // Match color scheme
-                  ),
-                ),
-                subtitle: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      event.eventType,
-                      style: const TextStyle(
-                        fontStyle: FontStyle.italic,
-                        fontFamily: 'Poppins',
-                        color: Colors.black87, // Match color scheme
-                      ),
-                    ),
-                    Text(
-                      formattedTime,
-                      style: const TextStyle(
-                        fontStyle: FontStyle.italic,
-                        fontFamily: 'Poppins',
-                        color: Colors.black87, // Match color scheme
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  void _showDeleteDialog(BuildContext context, int id) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Delete Event"),
-          content: const Text("Are you sure you want to delete this event?"),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text("Cancel"),
-            ),
-            TextButton(
-              onPressed: () {
-                onDelete(id);
-                Navigator.of(context).pop();
-              },
-              child: const Text("Delete"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-}

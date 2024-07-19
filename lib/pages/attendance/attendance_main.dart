@@ -27,11 +27,10 @@ class _AttendanceState extends State<Attendance> {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: Colors.transparent,
-        elevation: 15,
         title: const Text(
           'A T T E N D A N C E',
           style: TextStyle(
-              color: Colors.black,
+              color: Colors.blueGrey,
               fontStyle: FontStyle.italic,
               fontWeight: FontWeight.bold),
         ),
@@ -40,7 +39,7 @@ class _AttendanceState extends State<Attendance> {
           IconButton(
             icon: const Icon(
               Icons.refresh,
-              color: Colors.black,
+              color: Colors.blueGrey,
               size: 30,
             ),
             onPressed: () {
@@ -146,8 +145,8 @@ class _AttendanceState extends State<Attendance> {
                               shape: BoxShape.circle,
                               border: Border.all(
                                 width: 5,
-                                color: getPercentageColor(
-                                    subject.percent.toInt()),
+                                color:
+                                    getPercentageColor(subject.percent.toInt()),
                               ),
                             ),
                             alignment: Alignment.center,

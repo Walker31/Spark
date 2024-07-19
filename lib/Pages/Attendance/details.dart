@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
-import '../../Boxes/subject.dart';
+import '../../Models/subject.dart';
 import '../../Providers/attendance_provider.dart';
 import 'history.dart';
 import 'insert.dart';

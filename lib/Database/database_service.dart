@@ -4,8 +4,8 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:logger/logger.dart';
-import '../Boxes/attendance_count.dart';
-import '../Boxes/subject.dart';
+import '../Models/attendance_count.dart';
+import '../Models/subject.dart';
 
 class DatabaseHelper {
   static Database? _database;
