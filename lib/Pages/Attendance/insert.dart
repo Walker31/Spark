@@ -2,50 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
-import '../../Database/database_service.dart';
+
 import '../../Models/attendance_count.dart';
 import '../../Models/subject.dart';
 import '../../Providers/attendance_provider.dart';
 
-class InsertAttendance extends StatelessWidget {
+class InsertAttendanceDialog extends StatelessWidget {
   final Subject? item;
-  const InsertAttendance({super.key, required this.item});
-  static const String backgroundImagePath = 'assets/background_image.jpeg';
+
+  const InsertAttendanceDialog({super.key, required this.item});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: const AssetImage(backgroundImagePath),
-          fit: BoxFit.cover,
-          colorFilter: ColorFilter.mode(
-            Colors.black.withOpacity(0.8),
-            BlendMode.dstATop,
-          ),
-        ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
-              onPressed: () {
-                Navigator.of(context).pop();
-              }),
-          backgroundColor: Colors.transparent,
-          elevation: 15,
-          title: const Text(
-            "A T T E N D A N C E",
-            style: TextStyle(
-                fontStyle: FontStyle.italic,
-                fontWeight: FontWeight.bold,
-                color: Colors.black),
-          ),
-          centerTitle: true,
-        ),
-        body: Enter(item: item),
-      ),
+    return AlertDialog(
+      alignment: Alignment.center,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(30))),
+      title: const Center(child: Text('Mark Attendance')),
+      content: Enter(item: item),
     );
   }
 }
@@ -63,11 +37,17 @@ class EnterState extends State<Enter> {
   DateTime? selectedDate;
   bool isFirstEntry = true;
   TextEditingController dateCtl = TextEditingController();
-  static const String backgroundImagePath = 'assets/background_image.jpeg';
+  final Logger logger = Logger();
 
   @override
   void initState() {
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    dateCtl.dispose();
+    super.dispose();
   }
 
   bool isDateValid() {
@@ -76,45 +56,17 @@ class EnterState extends State<Enter> {
 
   @override
   Widget build(BuildContext context) {
-    return basicLayout();
-  }
-
-  Scaffold basicLayout() {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              buildCard(),
-              const SizedBox(height: 16),
-              buildButtons(context),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget buildCard() {
-    return Card(
-      elevation: 6,
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            _buildDetailRow("Subject Name", widget.item!.subName),
-            const SizedBox(height: 10.0),
-            _buildDetailRow("Subject Code", widget.item!.subCode),
-            const SizedBox(height: 10.0),
-            buildDatePicker(),
-          ],
-        ),
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          _buildDetailRow("Subject Name", widget.item!.subName),
+          const SizedBox(height: 10.0),
+          _buildDetailRow("Subject Code", widget.item!.subCode),
+          const SizedBox(height: 10.0),
+          buildDatePicker(),
+          const SizedBox(height: 16),
+          buildButtons(context),
+        ],
       ),
     );
   }
@@ -126,16 +78,16 @@ class EnterState extends State<Enter> {
       child: Column(
         children: [
           TextFormField(
+            showCursor: false,
+            readOnly: true,
             controller: dateCtl,
             decoration: const InputDecoration(
               labelText: 'Date of Class',
               labelStyle: TextStyle(
-                color: Colors.green,
                 fontWeight: FontWeight.bold,
               ),
               border: OutlineInputBorder(),
               enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.green),
                 borderRadius: BorderRadius.all(Radius.circular(10)),
               ),
               focusedBorder: OutlineInputBorder(
@@ -169,7 +121,7 @@ class EnterState extends State<Enter> {
               child: const Text(
                 '*Please select a valid date',
                 style: TextStyle(
-                  color: Colors.red,
+                  color: Colors.redAccent,
                   fontSize: 12.0,
                   fontWeight: FontWeight.bold,
                 ),
@@ -187,37 +139,62 @@ class EnterState extends State<Enter> {
         ElevatedButton(
           onPressed: isDateValid() ? () => attendance(context, true) : null,
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.green, // Background color when enabled
+            backgroundColor: Colors.green.shade700,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
             padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
-            minimumSize: const Size(140, 50),
-            elevation: 4, // Shadow elevation
+            elevation: 4,
           ),
           child: const Text(
-            'Present',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            'PRESENT',
+            style: TextStyle(
+                fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
           ),
         ),
         ElevatedButton(
           onPressed: isDateValid() ? () => attendance(context, false) : null,
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red, // Background color when enabled
+            backgroundColor: Colors.red.shade900,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
             padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
-            minimumSize: const Size(140, 50),
-            elevation: 4, // Shadow elevation
+            elevation: 4,
           ),
           child: const Text(
-            "Absent",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            'ABSENT',
+            style: TextStyle(
+                fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
           ),
         ),
       ],
     );
+  }
+
+  void attendance(BuildContext context, bool isPresent) {
+    setState(() {
+      isFirstEntry = false;
+    });
+
+    if (!isDateValid()) {
+      return;
+    }
+
+    if (selectedDate != null) {
+      logger.i("Date of class: ${selectedDate.toString()}");
+
+      final attendanceProvider =
+          Provider.of<AttendanceProvider>(context, listen: false);
+
+      AttendanceCount markAttendance = AttendanceCount(
+          subName: widget.item!.subName,
+          date: selectedDate!,
+          attend: isPresent);
+      attendanceProvider.addAttendance(markAttendance);
+
+      Navigator.pop(context, true); // Close the dialog
+    }
   }
 
   Widget _buildDetailRow(String label, String value) {
@@ -230,56 +207,11 @@ class EnterState extends State<Enter> {
         ),
         Text(
           value,
+          overflow: TextOverflow.ellipsis,
           style: const TextStyle(fontSize: 16),
+          maxLines: 1,
         ),
       ],
     );
-  }
-
-  void attendance(BuildContext context, bool attend) async {
-    if (selectedDate != null) {
-      try {
-        final attendance = AttendanceCount(
-          subName: widget.item!.subName,
-          date: selectedDate!,
-          attend: attend,
-        );
-
-        final attendanceProvider =
-            Provider.of<AttendanceProvider>(context, listen: false);
-        await attendanceProvider.addAttendance(attendance);
-
-        // Get the current attendance summary for the subject
-        final attendanceSummary = await DatabaseHelper.instance
-            .getAttendanceSummaryBySubject(widget.item!.subName);
-
-        int presentCount = attendanceSummary['present'] ?? 0;
-        int absentCount = attendanceSummary['absent'] ?? 0;
-        int totalCount = presentCount + absentCount;
-
-        // Update the subject with the new counts and percentage
-        final updatedSubject = widget.item!.copyWith(
-          nPresent: presentCount,
-          nTotal: totalCount,
-          percent: (totalCount == 0) ? 0 : (presentCount / totalCount) * 100,
-        );
-
-        await attendanceProvider.updateSubject(updatedSubject);
-
-        // ignore: use_build_context_synchronously
-        Navigator.of(context).pop();
-        // ignore: use_build_context_synchronously
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(attend ? 'Marked Present' : 'Marked Absent')),
-        );
-      } catch (e) {
-        Logger().e("Error inserting attendance: $e");
-      }
-    } else {
-      setState(() {
-        isFirstEntry = false;
-      });
-      Logger().e("Selected date is null");
-    }
   }
 }

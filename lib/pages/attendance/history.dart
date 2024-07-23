@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
+import 'package:spark/fonts.dart';
 import '../../Models/attendance_count.dart';
 import '../../Models/subject.dart';
 import '../../Providers/attendance_provider.dart';
@@ -30,22 +31,18 @@ class History extends StatelessWidget {
           backgroundColor: Colors.transparent,
           appBar: AppBar(
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+              icon: const Icon(Icons.arrow_back_ios, color: Colors.blueGrey),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             title: const Text(
               "H I S T O R Y",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 24,
-                color: Colors.black,
-              ),
+              style: appBarTitleStyle
             ),
             centerTitle: true,
             backgroundColor: Colors.transparent,
-            elevation: 15,
+            elevation: 0,
           ),
           body: HistoryList(item: item),
         ),

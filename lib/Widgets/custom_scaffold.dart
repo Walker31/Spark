@@ -14,7 +14,7 @@ class CustomScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const String backgroundImagePath = 'assets/background_image.jpeg';
+    const String backgroundImagePath = 'assets/background_image.jpg';
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -43,12 +43,13 @@ class CustomScaffold extends StatelessWidget {
                 icon: Icon(Icons.notes),
                 label: "Attendance",
               ),
+              BottomNavigationBarItem(icon: Icon(Icons.note), label: "Notes ")
             ],
             currentIndex: selectedIndex,
             onTap: onNavigationItemTapped,
             iconSize: 30, // Adjust the icon size
             selectedItemColor:
-                Colors.blueGrey, // Set the color of the selected item
+                Colors.blue, // Set the color of the selected item
             unselectedItemColor:
                 Colors.grey, // Set the color of unselected items
           ),

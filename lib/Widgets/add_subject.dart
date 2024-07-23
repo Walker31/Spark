@@ -16,13 +16,15 @@ class ItemEntryDialogState extends State<ItemEntryDialog> {
   Logger logger = Logger();
   String? _errorMessage;
 
-
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         TextField(
+          maxLength: 15,
+          maxLines: 1,
+          textCapitalization: TextCapitalization.words,
           controller: _nameController,
           decoration: InputDecoration(
             labelText: 'Subject Name',
@@ -31,6 +33,7 @@ class ItemEntryDialogState extends State<ItemEntryDialog> {
         ),
         const SizedBox(height: 12),
         TextField(
+          maxLines: 1,
           controller: _codeController,
           decoration: InputDecoration(
             labelText: 'Subject Code',
@@ -42,11 +45,11 @@ class ItemEntryDialogState extends State<ItemEntryDialog> {
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: const Text('Cancel', style: TextStyle(fontSize: 18)),
-          ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel', style: TextStyle(fontSize: 18)),
+            ),
             ElevatedButton(
               onPressed: () {
                 final name = _nameController.text;
@@ -54,20 +57,20 @@ class ItemEntryDialogState extends State<ItemEntryDialog> {
                 if (name.isNotEmpty && code.isNotEmpty) {
                   widget.onAddSubject(name, code);
                   setState(() {
-                _errorMessage = null;
+                    _errorMessage = null;
                   });
                 } else {
                   logger.e('Both fields are required.');
                   setState(() {
-                  _errorMessage = 'Both fields are required.';
+                    _errorMessage = 'Both fields are required.';
                   });
                 }
               },
-              child: const Text('Add',style: TextStyle(fontSize: 18)),
+              child: const Text('Add', style: TextStyle(fontSize: 18)),
             ),
           ],
         ),
-        if(_errorMessage != null)
+        if (_errorMessage != null)
           Padding(
             padding: const EdgeInsets.only(top: 8.0),
             child: Text(

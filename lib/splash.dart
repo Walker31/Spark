@@ -17,7 +17,7 @@ class SplashState extends State<Splash> {
     return Consumer<UsersProvider>(
       builder: (context, userProvider, child) {
         return AnimatedSplashScreen(
-          duration: 2000,
+          duration: 1000,
           splash: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

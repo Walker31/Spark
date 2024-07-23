@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:realm/realm.dart';
 import 'package:logger/logger.dart';
+import 'package:spark/color_schemes.dart';
 import '../../uuid.dart';
 import 'events_model.dart';
 
@@ -24,6 +25,7 @@ class AddScheduleState extends State<AddTimeTable> {
   @override
   Widget build(BuildContext context) {
     return FloatingActionButton(
+      backgroundColor: FAB,
       heroTag: "add_timetable_fab",
       onPressed: () => _showAddEventDialog(context),
       child: const Icon(Icons.class_outlined),
@@ -168,7 +170,8 @@ class AddScheduleState extends State<AddTimeTable> {
                     if (formKey.currentState!.validate()) {
                       formKey.currentState!.save();
                       String id = Utils.generateUuid();
-                      _addEvent(id, subjectName, eventType, eventDay, eventTime);
+                      _addEvent(
+                          id, subjectName, eventType, eventDay, eventTime);
                       Navigator.of(context).pop();
                     }
                   },
@@ -185,8 +188,8 @@ class AddScheduleState extends State<AddTimeTable> {
     );
   }
 
-  void _addEvent(String id, String subjectName, String eventType, String eventDay,
-      TimeOfDay eventTime) {
+  void _addEvent(String id, String subjectName, String eventType,
+      String eventDay, TimeOfDay eventTime) {
     var eventDate = DateTime.now();
     final eventDateTime = DateTime(
       eventDate.year,

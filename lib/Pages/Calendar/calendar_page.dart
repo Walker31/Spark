@@ -5,6 +5,7 @@ import 'package:logger/logger.dart';
 import 'package:realm/realm.dart';
 import 'package:spark/Pages/Calendar/expandable_fab.dart';
 import 'package:spark/Pages/Calendar/time_table.dart';
+import 'package:spark/fonts.dart';
 import 'calendar_card.dart';
 import 'event_list.dart';
 import 'events_model.dart';
@@ -166,13 +167,7 @@ class _CalendarPageState extends State<CalendarPage> {
           backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
           centerTitle: true,
-          title: const Text(
-            'C A L E N D A R',
-            style: TextStyle(
-                fontSize: 24,
-                color: Colors.blueGrey,
-                fontWeight: FontWeight.bold),
-          ),
+          title: const Text('C A L E N D A R', style: appBarTitleStyle),
         ),
         body: ListView(
           children: [
@@ -254,4 +249,3 @@ class _CalendarPageState extends State<CalendarPage> {
     _refreshEvents();
   }
 }
-

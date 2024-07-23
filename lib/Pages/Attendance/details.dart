@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
+import 'package:logger/logger.dart';
+import 'package:spark/color_schemes.dart';
+import 'package:spark/fonts.dart';
 import '../../Models/subject.dart';
 import '../../Providers/attendance_provider.dart';
 import 'history.dart';
@@ -17,7 +19,7 @@ class DetailScreen extends StatefulWidget {
 
 class DetailScreenState extends State<DetailScreen> {
   final Logger logger = Logger();
-  static const String backgroundImagePath = 'assets/background_image.jpeg';
+  static const String backgroundImagePath = 'assets/background_image.jpg';
   Subject? item;
 
   @override
@@ -27,11 +29,17 @@ class DetailScreenState extends State<DetailScreen> {
   }
 
   Future<void> _fetchSubject() async {
-    var subject = await Provider.of<AttendanceProvider>(context, listen: false)
-        .getSubject(widget.id);
-    setState(() {
-      item = subject;
-    });
+    try {
+      var subject =
+          await Provider.of<AttendanceProvider>(context, listen: false)
+              .getSubject(widget.id);
+      setState(() {
+        item = subject;
+      });
+    } catch (e) {
+      logger.e("Failed to fetch subject: $e");
+      // Optionally show an error message to the user
+    }
   }
 
   Future<void> _getHistory(BuildContext context, Subject item) async {
@@ -42,12 +50,18 @@ class DetailScreenState extends State<DetailScreen> {
     _fetchSubject(); // Refresh the state when coming back
   }
 
-  Future<void> _navigateToInsertAttendance(BuildContext context) async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => InsertAttendance(item: item!)),
+  Future<void> _showInsertAttendanceDialog(BuildContext context) async {
+    final result = await showDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return InsertAttendanceDialog(item: item!);
+      },
     );
-    _fetchSubject(); // Refresh the state when coming back
+
+    if (result ?? false) {
+      _fetchSubject(); // Refresh the state when the dialog indicates success
+    }
   }
 
   @override
@@ -69,26 +83,22 @@ class DetailScreenState extends State<DetailScreen> {
           backgroundColor: Colors.transparent,
           appBar: AppBar(
             leading: IconButton(
-                icon: const Icon(
-                  Icons.arrow_back_ios,
-                  color: Colors.black,
-                ),
+                icon: const Icon(Icons.arrow_back_ios, color: Colors.blueGrey),
                 onPressed: () {
                   Navigator.of(context).pop();
                 }),
             backgroundColor: Colors.transparent,
-            elevation: 15,
-            title: const Text(
-              "S U B J E C T   D E T A I L S",
-              style: TextStyle(
-                color: Colors.black87,
-                fontStyle: FontStyle.italic,
-                fontWeight: FontWeight.bold,
-                fontSize: 24,
-              ),
-            ),
+            elevation: 0,
+            title: const Text("S U B J E C T   D E T A I L S",
+                style: appBarTitleStyle),
             centerTitle: true,
           ),
+          floatingActionButton: FloatingActionButton(
+              backgroundColor: FAB,
+              onPressed: () => _getHistory(context, item!),
+              heroTag: 'History',
+              tooltip: 'Get previous Attendance',
+              child: const Icon(Icons.history)),
           body: item == null
               ? const Center(child: CircularProgressIndicator())
               : SingleChildScrollView(
@@ -107,47 +117,26 @@ class DetailScreenState extends State<DetailScreen> {
                             padding: const EdgeInsets.all(16),
                             child: Column(
                               children: [
-                                _buildDetailRow("Subject Name:", item!.subName),
-                                const SizedBox(height: 8),
-                                _buildDetailRow("Subject Code:", item!.subCode),
-                                const SizedBox(height: 8),
-                                _buildDetailRow("Total Classes Till Now:",
-                                    item!.nTotal.toString()),
-                                const SizedBox(height: 8),
-                                _buildDetailRow("Attendance % till now:",
-                                    item!.percent.toString()),
+                                _buildDetailRow("Subject Name", item!.subName),
+                                const SizedBox(height: 10.0),
+                                _buildDetailRow("Subject Code", item!.subCode),
+                                const SizedBox(height: 10.0),
+                                _buildDetailRow(
+                                    "Total Classes", item!.nTotal.toString()),
+                                const SizedBox(height: 10.0),
+                                _buildDetailRow("Attended Classes",
+                                    item!.nPresent.toString()),
+                                const SizedBox(height: 10.0),
+                                _buildAttendancePercentage(),
                               ],
                             ),
                           ),
                         ),
                         const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: () => _navigateToInsertAttendance(context),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 12, horizontal: 20),
-                          ),
-                          child: const Text(
-                            "Add Attendance",
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold),
-                          ),
-                        ),
+                        buildButtons(context),
                       ],
                     ),
                   ),
-                ),
-          floatingActionButton: item == null
-              ? null
-              : FloatingActionButton(
-                  backgroundColor: Colors.green,
-                  heroTag: 'History',
-                  onPressed: () => _getHistory(context, item!),
-                  child: const Icon(Icons.history),
                 ),
         ),
       ),
@@ -165,6 +154,68 @@ class DetailScreenState extends State<DetailScreen> {
         Text(
           value,
           style: const TextStyle(fontSize: 16),
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAttendancePercentage() {
+    double percentage =
+        item!.nTotal > 0 ? (item!.nPresent / item!.nTotal) * 100 : 0.0;
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              "Attendance Percentage",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            Text(
+              "${percentage.toStringAsFixed(2)}%",
+              style: TextStyle(
+                fontSize: 16,
+                color: percentage >= 75 ? Colors.green : Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10.0),
+        LinearProgressIndicator(
+          value: percentage / 100,
+          backgroundColor: Colors.grey[300],
+          valueColor: AlwaysStoppedAnimation<Color>(
+            percentage >= 75 ? Colors.green : Colors.red,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget buildButtons(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        ElevatedButton(
+          onPressed: () => _showInsertAttendanceDialog(context),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.grey.shade600,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+            elevation: 4,
+          ),
+          child: const Text(
+            'Mark Attendance',
+            style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87),
+          ),
         ),
       ],
     );

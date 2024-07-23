@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:spark/Providers/notes_provider.dart';
 import 'package:spark/Providers/user_provider.dart';
 import 'Pages/home_screen.dart';
 import 'Providers/attendance_provider.dart';
@@ -20,6 +21,7 @@ class Spark extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (context) => UsersProvider()),
         ChangeNotifierProvider(create: (context) => AttendanceProvider()),
+        ChangeNotifierProvider(create: (context) => NotesProvider())
       ],
       child: MaterialApp(
         theme: ThemeData.dark(),

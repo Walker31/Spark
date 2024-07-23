@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:logger/logger.dart';
+import 'package:spark/fonts.dart';
 import '../../Providers/attendance_provider.dart';
+import '../../color_schemes.dart';
 import 'attendance_utils.dart'; // Import the utilities
 
 class Attendance extends StatefulWidget {
@@ -27,19 +29,13 @@ class _AttendanceState extends State<Attendance> {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: Colors.transparent,
-        title: const Text(
-          'A T T E N D A N C E',
-          style: TextStyle(
-              color: Colors.blueGrey,
-              fontStyle: FontStyle.italic,
-              fontWeight: FontWeight.bold),
-        ),
+        title: const Text('A T T E N D A N C E', style: appBarTitleStyle),
         centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(
               Icons.refresh,
-              color: Colors.blueGrey,
+              color: Colors.blue,
               size: 30,
             ),
             onPressed: () {
@@ -54,6 +50,7 @@ class _AttendanceState extends State<Attendance> {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           FloatingActionButton(
+            backgroundColor: FAB,
             heroTag: 'addButton',
             onPressed: () {
               navigateToItemEntry(context);
@@ -63,6 +60,7 @@ class _AttendanceState extends State<Attendance> {
           ),
           const SizedBox(height: 16),
           FloatingActionButton(
+            backgroundColor: FAB,
             heroTag: 'searchButton',
             onPressed: () {
               search(context);

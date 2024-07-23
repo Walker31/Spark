@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
+import 'package:spark/fonts.dart';
 import '../../Database/database_service.dart';
 import '../../Models/attendance_count.dart';
 
@@ -9,7 +10,7 @@ class SearchAttendance extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const String backgroundImagePath = 'assets/background_image.jpeg';
+    const String backgroundImagePath = 'assets/background_image.jpg';
 
     return Scaffold(
         backgroundColor: Colors.transparent,
@@ -110,9 +111,7 @@ class SearchState extends State<Search> {
         backgroundColor:
             Colors.transparent, // Same background color as the previous page
         title: const Center(
-          child: Text("Search Attendance",
-              style: TextStyle(
-                  fontWeight: FontWeight.bold, color: Colors.blueGrey)),
+          child: Text("Search Attendance", style: appBarTitleStyle),
         ),
         centerTitle: true,
       ),

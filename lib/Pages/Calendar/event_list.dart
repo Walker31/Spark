@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:realm/realm.dart';
-
-import 'delete_dialog.dart';
-import 'edit_dialog.dart';
+import 'Dialogs/delete_dialog.dart';
+import 'Dialogs/edit_dialog.dart';
 
 class EventList extends StatelessWidget {
   final List<dynamic> events;

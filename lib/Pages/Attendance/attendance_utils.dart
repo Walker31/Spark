@@ -77,28 +77,23 @@ void navigateToItemEntry(BuildContext context) {
         content: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ItemEntryDialog(
-                  onAddSubject: (subjectName, subjectCode) {
-                    Logger().d(
-                        'Subject Name: $subjectName, Subject Code: $subjectCode');
-                    final newSubject = Subject(
-                      subName: subjectName,
-                      subCode: subjectCode,
-                      nPresent: 0,
-                      nTotal: 0,
-                      percent: 0.0,
-                      id: generateIntKey(),
-                    );
-                    Logger().d(newSubject);
-                    Provider.of<AttendanceProvider>(context, listen: false)
-                        .addSubject(newSubject);
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ],
+            child: ItemEntryDialog(
+              onAddSubject: (subjectName, subjectCode) {
+                Logger().d(
+                    'Subject Name: $subjectName, Subject Code: $subjectCode');
+                final newSubject = Subject(
+                  subName: subjectName,
+                  subCode: subjectCode,
+                  nPresent: 0,
+                  nTotal: 0,
+                  percent: 0.0,
+                  id: generateIntKey(),
+                );
+                Logger().d(newSubject);
+                Provider.of<AttendanceProvider>(context, listen: false)
+                    .addSubject(newSubject);
+                Navigator.of(context).pop();
+              },
             ),
           ),
         ),

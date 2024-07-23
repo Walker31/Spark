@@ -94,9 +94,10 @@ class AttendanceProvider with ChangeNotifier {
   Future<void> addAttendance(AttendanceCount attendance) async {
     try {
       await _databaseHelper.insertAttendance(attendance);
+      await _databaseHelper.updateSubjectAttendance(attendance.subName);
       _attendanceList =
           await _databaseHelper.getAttendanceByDate(attendance.date);
-      await _databaseHelper.updateSubjectAttendance(attendance.subName);
+      _subjects = await _databaseHelper.getAllSubjects(); // Ensure subjects are updated
       logger.d('Added attendance: ${attendance.toMap()}');
       notifyListeners();
     } catch (e) {
@@ -117,6 +118,4 @@ class AttendanceProvider with ChangeNotifier {
   }
 
   updateSubject(Subject updatedSubject) {}
-
-  // Add additional methods to delete all attendance and subjects if needed
 }

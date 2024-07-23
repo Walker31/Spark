@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:spark/color_schemes.dart';
 
 @immutable
 class ExpandableFab extends StatefulWidget {
@@ -84,7 +85,7 @@ class _ExpandableFabState extends State<ExpandableFab>
           child: InkWell(
             onTap: _toggle,
             child: const Padding(
-              padding:EdgeInsets.all(8),
+              padding: EdgeInsets.all(8),
               child: Icon(
                 Icons.close,
               ),
@@ -131,6 +132,7 @@ class _ExpandableFabState extends State<ExpandableFab>
           curve: const Interval(0.25, 1.0, curve: Curves.easeInOut),
           duration: const Duration(milliseconds: 250),
           child: FloatingActionButton(
+            backgroundColor: FAB,
             onPressed: _toggle,
             child: const Icon(Icons.add),
           ),
@@ -193,16 +195,14 @@ class ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Material(
       shape: const CircleBorder(),
       clipBehavior: Clip.antiAlias,
-      color: theme.colorScheme.secondary,
+      color: FAB,
       elevation: 4,
       child: IconButton(
         onPressed: onPressed,
         icon: icon,
-        color: theme.colorScheme.onSecondary,
       ),
     );
   }

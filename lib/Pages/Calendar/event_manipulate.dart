@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:realm/realm.dart';
 import 'package:logger/logger.dart';
+import 'package:spark/color_schemes.dart';
 import '../../uuid.dart';
 import 'events_model.dart';
 
@@ -25,6 +26,7 @@ class AddEventFabState extends State<AddEventFab> {
   @override
   Widget build(BuildContext context) {
     return FloatingActionButton(
+      backgroundColor: FAB,
       heroTag: "add_event",
       onPressed: () => _showAddEventDialog(context),
       child: const Icon(Icons.event_note),
@@ -169,7 +171,8 @@ class AddEventFabState extends State<AddEventFab> {
                   onPressed: () {
                     if (formKey.currentState!.validate()) {
                       formKey.currentState!.save();
-                      _addEvent(Utils.generateUuid(), subjectName, eventType, eventDate, eventTime);
+                      _addEvent(Utils.generateUuid(), subjectName, eventType,
+                          eventDate, eventTime);
                       Navigator.of(context).pop();
                     }
                   },
@@ -186,7 +189,8 @@ class AddEventFabState extends State<AddEventFab> {
     );
   }
 
-  void _addEvent(String id, String subjectName, String eventType, DateTime eventDate, TimeOfDay eventTime) {
+  void _addEvent(String id, String subjectName, String eventType,
+      DateTime eventDate, TimeOfDay eventTime) {
     final eventDateTime = DateTime(
       eventDate.year,
       eventDate.month,
