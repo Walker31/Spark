@@ -119,8 +119,8 @@ class _AttendanceState extends State<Attendance> {
                                   subject.subName,
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 33.0,
-                                    fontFamily: 'Caveat',
+                                    fontStyle: FontStyle.italic,
+                                    fontSize: 24.0,
                                     color: Colors.grey,
                                   ),
                                 ),

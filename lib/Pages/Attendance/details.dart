@@ -3,10 +3,10 @@ import 'package:provider/provider.dart';
 import 'package:logger/logger.dart';
 import 'package:spark/color_schemes.dart';
 import 'package:spark/fonts.dart';
+import '../../Models/attendance_count.dart';
 import '../../Models/subject.dart';
 import '../../Providers/attendance_provider.dart';
 import 'history.dart';
-import 'insert.dart';
 
 class DetailScreen extends StatefulWidget {
   final int id;
@@ -21,11 +21,14 @@ class DetailScreenState extends State<DetailScreen> {
   final Logger logger = Logger();
   static const String backgroundImagePath = 'assets/background_image.jpg';
   Subject? item;
+  DateTime selectedDate = DateTime.now();
+  Map<DateTime, bool> attendanceMarked = {};
 
   @override
   void initState() {
     super.initState();
     _fetchSubject();
+    _fetchAttendanceData();
   }
 
   Future<void> _fetchSubject() async {
@@ -42,6 +45,23 @@ class DetailScreenState extends State<DetailScreen> {
     }
   }
 
+  Future<void> _fetchAttendanceData() async {
+    try {
+      var attendanceList =
+          await Provider.of<AttendanceProvider>(context, listen: false)
+              .getAttendanceForSubject(item!.subName);
+      setState(() {
+        attendanceMarked = {
+          for (var attendance in attendanceList)
+            attendance.date: attendance.attend
+        };
+      });
+    } catch (e) {
+      logger.e("Failed to fetch attendance data: $e");
+      // Optionally show an error message to the user
+    }
+  }
+
   Future<void> _getHistory(BuildContext context, Subject item) async {
     await Navigator.push(
       context,
@@ -50,17 +70,57 @@ class DetailScreenState extends State<DetailScreen> {
     _fetchSubject(); // Refresh the state when coming back
   }
 
-  Future<void> _showInsertAttendanceDialog(BuildContext context) async {
-    final result = await showDialog<bool>(
+  void _markAttendance(int selectedItem) {
+    final attendanceProvider =
+        Provider.of<AttendanceProvider>(context, listen: false);
+
+    AttendanceCount markAttendance = AttendanceCount(
+        subName: item!.subName,
+        date: selectedDate,
+        attend: selectedItem == 1 && selectedItem != 3 ? true : false);
+    attendanceProvider.addAttendance(markAttendance);
+
+    if (selectedItem == 1) {
+      setState(() {
+        item!.nTotal += 1;
+        item!.nPresent += 1;
+      });
+      logger.d('Marked as PRESENT');
+    } else if (selectedItem == 2) {
+      setState(() {
+        item!.nTotal += 1;
+      });
+      logger.d('Marked as ABSENT');
+    }
+    Provider.of<AttendanceProvider>(context, listen: false)
+        .updateSubject(item!);
+  }
+
+  void _showDropdownMenu(BuildContext context, Offset position) async {
+    final selectedItem = await showMenu(
       context: context,
-      barrierDismissible: true,
-      builder: (BuildContext context) {
-        return InsertAttendanceDialog(item: item!);
-      },
+      position: RelativeRect.fromLTRB(
+        position.dx,
+        position.dy,
+        position.dx,
+        position.dy,
+      ),
+      items: [
+        const PopupMenuItem<int>(
+          value: 1,
+          child: Text('PRESENT'),
+        ),
+        const PopupMenuItem<int>(
+          value: 2,
+          child: Text('ABSENT'),
+        ),
+      ],
     );
 
-    if (result ?? false) {
-      _fetchSubject(); // Refresh the state when the dialog indicates success
+    if (selectedItem != null) {
+      logger.d('Selected: $selectedItem');
+      _markAttendance(selectedItem);
+      _fetchAttendanceData(); // Refresh attendance data after marking
     }
   }
 
@@ -107,7 +167,39 @@ class DetailScreenState extends State<DetailScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Container(
+                            decoration: BoxDecoration(
+                                color: Colors.blueGrey.withOpacity(0.5),
+                                borderRadius: BorderRadius.circular(8)),
+                            child: GestureDetector(
+                              onLongPressStart:
+                                  (LongPressStartDetails details) {
+                                logger.d("Long Pressed");
+                                _showDropdownMenu(
+                                    context, details.globalPosition);
+                              },
+                              child: CalendarDatePicker(
+                                  initialDate: DateTime.now(),
+                                  firstDate: DateTime(2024, 1, 1),
+                                  lastDate: DateTime(2099, 12, 31),
+                                  onDateChanged: (value) {
+                                    setState(() {
+                                      selectedDate = value;
+                                    });
+                                  },
+                                  selectableDayPredicate: (date) {
+                                    return true; // Allow all dates to be selectable
+                                  }),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 100,
+                        ),
                         Card(
+                          color: Colors.grey.shade900.withOpacity(0.5),
                           elevation: 4,
                           margin: const EdgeInsets.symmetric(vertical: 8),
                           shape: RoundedRectangleBorder(
@@ -132,8 +224,6 @@ class DetailScreenState extends State<DetailScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        buildButtons(context),
                       ],
                     ),
                   ),
@@ -189,32 +279,6 @@ class DetailScreenState extends State<DetailScreen> {
           backgroundColor: Colors.grey[300],
           valueColor: AlwaysStoppedAnimation<Color>(
             percentage >= 75 ? Colors.green : Colors.red,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget buildButtons(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        ElevatedButton(
-          onPressed: () => _showInsertAttendanceDialog(context),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.grey.shade600,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
-            elevation: 4,
-          ),
-          child: const Text(
-            'Mark Attendance',
-            style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87),
           ),
         ),
       ],

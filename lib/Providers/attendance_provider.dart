@@ -97,7 +97,8 @@ class AttendanceProvider with ChangeNotifier {
       await _databaseHelper.updateSubjectAttendance(attendance.subName);
       _attendanceList =
           await _databaseHelper.getAttendanceByDate(attendance.date);
-      _subjects = await _databaseHelper.getAllSubjects(); // Ensure subjects are updated
+      _subjects =
+          await _databaseHelper.getAllSubjects(); // Ensure subjects are updated
       logger.d('Added attendance: ${attendance.toMap()}');
       notifyListeners();
     } catch (e) {
@@ -114,6 +115,17 @@ class AttendanceProvider with ChangeNotifier {
       notifyListeners();
     } catch (e) {
       logger.e('Error deleting attendance: $e');
+    }
+  }
+
+  Future<List<AttendanceCount>> getAttendanceForSubject(String name) async {
+    try {
+      var result = await _databaseHelper.getAttendanceBySubject(name);
+      logger.d('Retrieved Successfully: ${result.length}');
+      return result;
+    } catch (e) {
+      logger.e('Error fetching attendance with ID $name: $e');
+      return [];
     }
   }
 
