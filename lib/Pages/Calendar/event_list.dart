@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:realm/realm.dart';
+import '../../Database/database_service.dart';
 import 'Dialogs/delete_dialog.dart';
 import 'Dialogs/edit_dialog.dart';
 
@@ -10,14 +11,25 @@ class EventList extends StatelessWidget {
   final Realm realm;
   final void Function(String id) onDelete;
   final void Function() onEdit;
+  final String date;
 
-  const EventList({
-    super.key,
-    required this.events,
-    required this.realm,
-    required this.onDelete,
-    required this.onEdit,
-  });
+  const EventList(
+      {super.key,
+      required this.events,
+      required this.realm,
+      required this.onDelete,
+      required this.onEdit,
+      required this.date});
+
+  Future<Color> getColor(String subName, String date) async {
+    final DatabaseHelper databaseHelper = DatabaseHelper.instance;
+
+    // Check if the attendance on the given date is found
+    Color found = await databaseHelper.getAttendanceOnDate(subName, date);
+
+    // Return color based on the result
+    return found;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,71 +48,79 @@ class EventList extends StatelessWidget {
           final formattedTime = DateFormat.jm().format(eventTime);
           logger.d('Rendering event: ${event.id}, ${event.subjectName}');
 
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              elevation: 5,
-              color: Colors.blueAccent.withOpacity(0.8),
-              child: Dismissible(
-                key: ValueKey(event.id),
-                background: Container(
-                  decoration: const BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadius.only(
-                          topRight: Radius.circular(10),
-                          bottomRight: Radius.circular(10))),
-                  alignment: Alignment.centerRight,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: const Icon(Icons.delete, color: Colors.white),
-                ),
-                direction: DismissDirection.endToStart,
-                confirmDismiss: (direction) {
-                  return showDeleteDialog(context, event.id, onDelete);
-                },
-                child: Container(
-                  decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: Colors.blueAccent.withOpacity(0.8)),
-                  child: ListTile(
-                    onLongPress: () {
-                      showEditDialog(context, event.id, realm, onEdit);
-                    },
-                    title: Text(
-                      event.subjectName,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Poppins',
-                        color: Colors.black, // Match color scheme
-                      ),
+          return FutureBuilder<Color>(
+            future: getColor(event.subjectName, date),
+            builder: (context, snapshot) {
+              Color cardColor;
+              cardColor = snapshot.data ?? Colors.transparent;
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  elevation: 5,
+                  color: cardColor,
+                  child: Dismissible(
+                    key: ValueKey(event.id),
+                    background: Container(
+                      decoration: const BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.only(
+                              topRight: Radius.circular(10),
+                              bottomRight: Radius.circular(10))),
+                      alignment: Alignment.centerRight,
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: const Icon(Icons.delete, color: Colors.white),
                     ),
-                    subtitle: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          event.eventType,
+                    direction: DismissDirection.endToStart,
+                    confirmDismiss: (direction) {
+                      return showDeleteDialog(context, event.id, onDelete);
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: cardColor),
+                      child: ListTile(
+                        onLongPress: () {
+                          showEditDialog(context, event.id, realm, onEdit);
+                        },
+                        title: Text(
+                          event.subjectName,
                           style: const TextStyle(
-                            fontStyle: FontStyle.italic,
+                            fontWeight: FontWeight.bold,
                             fontFamily: 'Poppins',
-                            color: Colors.black87, // Match color scheme
+                            color: Colors.black, // Match color scheme
                           ),
                         ),
-                        Text(
-                          formattedTime,
-                          style: const TextStyle(
-                            fontStyle: FontStyle.italic,
-                            fontFamily: 'Poppins',
-                            color: Colors.black87, // Match color scheme
-                          ),
+                        subtitle: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              event.eventType,
+                              style: const TextStyle(
+                                fontStyle: FontStyle.italic,
+                                fontFamily: 'Poppins',
+                                color: Colors.black87, // Match color scheme
+                              ),
+                            ),
+                            Text(
+                              formattedTime,
+                              style: const TextStyle(
+                                fontStyle: FontStyle.italic,
+                                fontFamily: 'Poppins',
+                                color: Colors.black87, // Match color scheme
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ),
+              );
+            },
           );
         },
       ),

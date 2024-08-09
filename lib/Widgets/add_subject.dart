@@ -22,7 +22,6 @@ class ItemEntryDialogState extends State<ItemEntryDialog> {
       mainAxisSize: MainAxisSize.min,
       children: [
         TextField(
-          maxLength: 15,
           maxLines: 1,
           textCapitalization: TextCapitalization.words,
           controller: _nameController,

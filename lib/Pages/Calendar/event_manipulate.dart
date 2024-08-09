@@ -121,12 +121,10 @@ class AddEventFabState extends State<AddEventFab> {
                             firstDate: DateTime.now(),
                             lastDate: DateTime(2101),
                           );
-                          if (picked != null) {
-                            setState(() {
-                              eventDate = picked;
-                            });
-                          }
-                        },
+                          setState(() {
+                            eventDate = picked!;
+                          });
+                                                },
                       ),
                       const SizedBox(height: 10),
                       TextFormField(

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
@@ -77,9 +78,10 @@ class DatabaseHelper {
 
   // Attendance operations
 
-  Future<int> insertAttendance(AttendanceCount attendance) async {
-    final db = await database;
-    return await db.insert('attendance_counts', attendance.toMap());
+  Future<AttendanceCount> insertAttendance(AttendanceCount attendance) async {
+    final db = await instance.database;
+    final id = await db.insert('attendance_counts', attendance.toMap());
+    return attendance.copy(id: id);
   }
 
   Future<List<AttendanceCount>> getAttendanceByDate(DateTime date) async {
@@ -91,6 +93,44 @@ class DatabaseHelper {
       whereArgs: [formattedDate],
     );
     return result.map((e) => AttendanceCount.fromMap(e)).toList();
+  }
+
+  Future<Color> getAttendanceOnDate(String subName, String date) async {
+    try {
+      logger.d('Fetching attendance for subject: $subName on date: $date');
+
+      // Convert the date string to DateTime
+      DateTime targetDate = DateTime.parse(date);
+      String formattedDate = DateFormat('yyyy-MM-dd').format(targetDate);
+      logger.d("formattedDate: $formattedDate");
+
+      final db = await database;
+
+      // Query the database
+      var result = await db.query(
+        'attendance_counts',
+        where: 'subName = ? AND date = ?',
+        whereArgs: [subName, formattedDate],
+      );
+
+      logger.d('Query result: $result');
+
+      if (result.isNotEmpty) {
+        var attendance = AttendanceCount.fromMap(result.first);
+        // ignore: unrelated_type_equality_checks
+        if (attendance.attend == true) {
+          return Colors.green.shade600; // Attendance marked present
+        } else {
+          return Colors.red.shade600; // Attendance marked absent
+        }
+      } else {
+        return Colors.blueGrey; // No attendance found
+      }
+    } catch (e) {
+      // Log any errors that occur during the process
+      logger.e('Error fetching attendance on date: $date / $e');
+      return Colors.grey; // Return grey on error
+    }
   }
 
   Future<List<AttendanceCount>> getAttendanceBySubject(String subName) async {

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:logger/logger.dart';
+import 'package:spark/Pages/Attendance/attendance_utils.dart';
+import 'package:spark/Pages/Attendance/calendar_custom.dart';
 import 'package:spark/color_schemes.dart';
 import 'package:spark/fonts.dart';
-import '../../Models/attendance_count.dart';
 import '../../Models/subject.dart';
 import '../../Providers/attendance_provider.dart';
 import 'history.dart';
@@ -28,7 +29,6 @@ class DetailScreenState extends State<DetailScreen> {
   void initState() {
     super.initState();
     _fetchSubject();
-    _fetchAttendanceData();
   }
 
   Future<void> _fetchSubject() async {
@@ -39,17 +39,20 @@ class DetailScreenState extends State<DetailScreen> {
       setState(() {
         item = subject;
       });
+      fetchAttendanceData();
     } catch (e) {
       logger.e("Failed to fetch subject: $e");
       // Optionally show an error message to the user
     }
   }
 
-  Future<void> _fetchAttendanceData() async {
+  Future<void> fetchAttendanceData() async {
     try {
+      logger.d('Subname: ${item!.subName}');
       var attendanceList =
           await Provider.of<AttendanceProvider>(context, listen: false)
               .getAttendanceForSubject(item!.subName);
+
       setState(() {
         attendanceMarked = {
           for (var attendance in attendanceList)
@@ -70,16 +73,7 @@ class DetailScreenState extends State<DetailScreen> {
     _fetchSubject(); // Refresh the state when coming back
   }
 
-  void _markAttendance(int selectedItem) {
-    final attendanceProvider =
-        Provider.of<AttendanceProvider>(context, listen: false);
-
-    AttendanceCount markAttendance = AttendanceCount(
-        subName: item!.subName,
-        date: selectedDate,
-        attend: selectedItem == 1 && selectedItem != 3 ? true : false);
-    attendanceProvider.addAttendance(markAttendance);
-
+  void markAttendance(int selectedItem) {
     if (selectedItem == 1) {
       setState(() {
         item!.nTotal += 1;
@@ -94,34 +88,6 @@ class DetailScreenState extends State<DetailScreen> {
     }
     Provider.of<AttendanceProvider>(context, listen: false)
         .updateSubject(item!);
-  }
-
-  void _showDropdownMenu(BuildContext context, Offset position) async {
-    final selectedItem = await showMenu(
-      context: context,
-      position: RelativeRect.fromLTRB(
-        position.dx,
-        position.dy,
-        position.dx,
-        position.dy,
-      ),
-      items: [
-        const PopupMenuItem<int>(
-          value: 1,
-          child: Text('PRESENT'),
-        ),
-        const PopupMenuItem<int>(
-          value: 2,
-          child: Text('ABSENT'),
-        ),
-      ],
-    );
-
-    if (selectedItem != null) {
-      logger.d('Selected: $selectedItem');
-      _markAttendance(selectedItem);
-      _fetchAttendanceData(); // Refresh attendance data after marking
-    }
   }
 
   @override
@@ -174,25 +140,16 @@ class DetailScreenState extends State<DetailScreen> {
                                 color: Colors.blueGrey.withOpacity(0.5),
                                 borderRadius: BorderRadius.circular(8)),
                             child: GestureDetector(
-                              onLongPressStart:
-                                  (LongPressStartDetails details) {
-                                logger.d("Long Pressed");
-                                _showDropdownMenu(
-                                    context, details.globalPosition);
-                              },
-                              child: CalendarDatePicker(
-                                  initialDate: DateTime.now(),
-                                  firstDate: DateTime(2024, 1, 1),
-                                  lastDate: DateTime(2099, 12, 31),
-                                  onDateChanged: (value) {
-                                    setState(() {
-                                      selectedDate = value;
-                                    });
-                                  },
-                                  selectableDayPredicate: (date) {
-                                    return true; // Allow all dates to be selectable
-                                  }),
-                            ),
+                                child: CustomCalendarDatePicker(
+                                    item: item,
+                                    attendance: attendanceMarked,
+                                    selectedDate: selectedDate,
+                                    onDateChanged: (value) {
+                                      setState(() {
+                                        selectedDate = selectedDate;
+                                      });
+                                    },
+                                    onAttendanceMarked: markAttendance)),
                           ),
                         ),
                         const SizedBox(
@@ -267,7 +224,7 @@ class DetailScreenState extends State<DetailScreen> {
               "${percentage.toStringAsFixed(2)}%",
               style: TextStyle(
                 fontSize: 16,
-                color: percentage >= 75 ? Colors.green : Colors.red,
+                color: getPercentageColor(percentage.toInt()),
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -278,8 +235,7 @@ class DetailScreenState extends State<DetailScreen> {
           value: percentage / 100,
           backgroundColor: Colors.grey[300],
           valueColor: AlwaysStoppedAnimation<Color>(
-            percentage >= 75 ? Colors.green : Colors.red,
-          ),
+              getPercentageColor(percentage.toInt())),
         ),
       ],
     );

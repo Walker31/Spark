@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:spark/Models/subject.dart';
+import '../../Models/attendance_count.dart';
 import '../../Providers/attendance_provider.dart';
 import '../../Widgets/add_subject.dart';
 import 'details.dart';
@@ -11,6 +12,7 @@ import 'search.dart';
 
 const String backgroundImagePath = 'assets/background_image.jpeg';
 const Color loadingIndicatorColor = Color.fromARGB(255, 6, 139, 55);
+Logger logger = Logger();
 
 Color getPercentageColor(int percent) {
   if (percent >= 85) {
@@ -100,6 +102,23 @@ void navigateToItemEntry(BuildContext context) {
       );
     },
   );
+}
+
+void markAttendance(BuildContext context, Subject item, DateTime selectedDate,
+    int selectedItem) {
+  final attendanceProvider =
+      Provider.of<AttendanceProvider>(context, listen: false);
+
+  AttendanceCount markAttendance = AttendanceCount(
+    subName: item.subName,
+    date: selectedDate,
+    attend: selectedItem == 1,
+  );
+
+  logger.d(
+      'Added Attendance: ${markAttendance.subName + markAttendance.date.toIso8601String()}');
+  attendanceProvider.addAttendance(markAttendance);
+  attendanceProvider.updateSubject(item);
 }
 
 void deleteSubject(BuildContext context, Subject subject) {

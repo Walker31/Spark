@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 class AttendanceCount {
   int? id; // Id type is int
   String subName;
@@ -15,7 +17,7 @@ class AttendanceCount {
     return {
       'id': id, // Id type is int
       'subName': subName,
-      'date': date.toIso8601String(),
+      'date': DateFormat('yyyy-MM-dd').format(date), // Store only the date part
       'attend': attend ? 1 : 0,
     };
   }
@@ -24,8 +26,22 @@ class AttendanceCount {
     return AttendanceCount(
       id: map['id'], // Id type is int
       subName: map['subName'],
-      date: DateTime.parse(map['date']),
+      date: DateTime.parse(map['date']), // Parse only the date part
       attend: map['attend'] == 1,
+    );
+  }
+
+  AttendanceCount copy({
+    int? id,
+    String? subName,
+    DateTime? date,
+    bool? attend,
+  }) {
+    return AttendanceCount(
+      id: id ?? this.id,
+      subName: subName ?? this.subName,
+      date: date ?? this.date,
+      attend: attend ?? this.attend,
     );
   }
 }

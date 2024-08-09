@@ -1,9 +1,13 @@
+// ignore_for_file: use_build_context_synchronously, duplicate_ignore
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
+import 'package:provider/provider.dart';
 import 'package:spark/fonts.dart';
 import '../../Database/database_service.dart';
 import '../../Models/attendance_count.dart';
+import '../../Providers/attendance_provider.dart';
 
 class SearchAttendance extends StatelessWidget {
   const SearchAttendance({super.key});
@@ -13,20 +17,21 @@ class SearchAttendance extends StatelessWidget {
     const String backgroundImagePath = 'assets/background_image.jpg';
 
     return Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: const AssetImage(backgroundImagePath),
-                fit: BoxFit.cover,
-                colorFilter: ColorFilter.mode(
-                  Colors.black.withOpacity(0.8),
-                  BlendMode.dstATop,
-                ),
-                opacity: 0.8,
-              ),
+      backgroundColor: Colors.transparent,
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: const AssetImage(backgroundImagePath),
+            fit: BoxFit.cover,
+            colorFilter: ColorFilter.mode(
+              Colors.black.withOpacity(0.8),
+              BlendMode.dstATop,
             ),
-            child: const Search()));
+          ),
+        ),
+        child: const Search(),
+      ),
+    );
   }
 }
 
@@ -72,7 +77,9 @@ class SearchState extends State<Search> {
       content: Text(message),
       duration: const Duration(seconds: 3),
     );
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    }
   }
 
   Future<void> _getAttendanceList() async {
@@ -90,8 +97,60 @@ class SearchState extends State<Search> {
       }
     } catch (error) {
       _logger.e('Error fetching attendance: $error');
+      // ignore: duplicate_ignore
       // ignore: use_build_context_synchronously
       showErrorSnackBar(context, 'Error fetching attendance: $error');
+    }
+  }
+
+  Future<bool> confirmDelete(BuildContext context, int id) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Attendance'),
+          content: const Text(
+              'Are you sure you want to delete this attendance record?'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+            ),
+            TextButton(
+              child: const Text('Delete'),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result == true) {
+      await deleteAttendance(id);
+      return true;
+    } else {
+      _getAttendanceList();
+      return false;
+    }
+  }
+
+  Future<void> deleteAttendance(int id) async {
+    final attendanceProvider =
+        Provider.of<AttendanceProvider>(context, listen: false);
+    try {
+      await attendanceProvider.deleteAttendance(id);
+      _getAttendanceList(); // Refresh the list after deletion
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Attendance record deleted')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error deleting attendance: $e')),
+      );
     }
   }
 
@@ -108,8 +167,7 @@ class SearchState extends State<Search> {
             Navigator.of(context).pop();
           },
         ),
-        backgroundColor:
-            Colors.transparent, // Same background color as the previous page
+        backgroundColor: Colors.transparent,
         title: const Center(
           child: Text("Search Attendance", style: appBarTitleStyle),
         ),
@@ -190,32 +248,49 @@ class SearchState extends State<Search> {
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: _attendanceList.length,
                     itemBuilder: (BuildContext context, int index) {
+                      final searchItem = _attendanceList[index];
                       return Padding(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16.0, vertical: 8.0),
-                        child: Card(
-                          elevation: 3,
+                          horizontal: 16.0,
+                          vertical: 8.0,
+                        ),
+                        child: Dismissible(
+                          key: ValueKey(searchItem.id),
+                          background: Container(
+                            color: Colors.red,
+                            alignment: Alignment.centerRight,
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: const Icon(
+                              Icons.delete,
+                              color: Colors.white,
+                            ),
+                          ),
+                          direction: DismissDirection.endToStart,
+                          confirmDismiss: (direction) async {
+                            return await confirmDelete(context, searchItem.id!);
+                          },
                           child: ListTile(
-                            tileColor: Colors.white,
+                            tileColor: Colors.grey.withOpacity(0.2),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10.0),
+                              borderRadius: BorderRadius.circular(10),
                             ),
                             title: Text(
-                              _attendanceList[index].subName,
+                              DateFormat('dd/MM/yyyy').format(searchItem.date),
                               style: const TextStyle(
-                                fontSize: 16,
+                                color: Colors.white,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.black, // Adjust text color
                               ),
                             ),
                             trailing: Text(
-                              _attendanceList[index].attend
-                                  ? 'Present'
-                                  : 'Absent',
-                              style: const TextStyle(
+                              searchItem.attend
+                                  ? 'P R E S E N T'
+                                  : 'A B S E N T',
+                              style: TextStyle(
                                 fontSize: 16,
+                                color: searchItem.attend
+                                    ? Colors.green
+                                    : const Color.fromARGB(255, 156, 16, 5),
                                 fontWeight: FontWeight.bold,
-                                color: Colors.black, // Adjust text color
                               ),
                             ),
                           ),

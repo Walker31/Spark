@@ -159,6 +159,8 @@ class _CalendarPageState extends State<CalendarPage> {
     );
   }
 
+  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -199,6 +201,7 @@ class _CalendarPageState extends State<CalendarPage> {
                         ],
                       )
                     : EventList(
+                      date:_selectedDate,
                         events: events,
                         realm: realm,
                         onDelete: (String id) {
