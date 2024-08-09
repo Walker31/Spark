@@ -59,6 +59,7 @@ lib/
 
 ---
 
+## Yet to be Implemented
 
 - **Notification Integration**: Implement push notifications for reminders.
 - **User Authentication**: Add login and authentication features.
