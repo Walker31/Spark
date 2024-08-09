@@ -14,9 +14,14 @@ Spark is a versatile Flutter application that allows users to manage and track e
 - **Attendance Overview**: Display attendance summaries with percentages.
 - **Search Functionality**: Search for specific attendance records.
 
+### Notes Management
+- **Note Creation and Deletion**: Add, edit, and delete personal notes.
+- **Note Display**: View notes in a responsive grid layout with summarized content.
+- **Search and Filter**: Find notes based on content.
+
 ### User Interface
 - **Responsive and Intuitive Design**: User-friendly interface with custom styling.
-- **Expandable Floating Action Buttons**: Quick access to add new events or subjects.
+- **Expandable Floating Action Buttons**: Quick access to add new events, subjects, or notes.
 
 ---
 
@@ -34,12 +39,19 @@ lib/
 |   |   |-- expandable_fab.dart
 |   |   `-- time_table.dart
 |   |
-|   `-- Attendance/
-|       |-- attendance.dart
-|       |-- attendance_utils.dart
+|   |-- Attendance/
+|   |   |-- attendance.dart
+|   |   |-- attendance_utils.dart
+|   |
+|   `-- Notes/
+|       |-- note.dart
+|       |-- notes_grid.dart
+|       |-- notes_model.dart
+|       `-- notes_provider.dart
 |
 |-- Providers/
-|   `-- attendance_provider.dart
+|   |-- attendance_provider.dart
+|   `-- notes_provider.dart
 |
 |-- fonts.dart
 |-- color_schemes.dart
