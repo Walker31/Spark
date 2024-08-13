@@ -257,7 +257,11 @@ class SearchState extends State<Search> {
                         child: Dismissible(
                           key: ValueKey(searchItem.id),
                           background: Container(
-                            color: Colors.red,
+                            decoration: BoxDecoration(
+                                color: Colors.red,
+                                border: Border.all(),
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(8))),
                             alignment: Alignment.centerRight,
                             padding: const EdgeInsets.symmetric(horizontal: 20),
                             child: const Icon(
@@ -275,6 +279,12 @@ class SearchState extends State<Search> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                             title: Text(
+                              searchItem.subName,
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            subtitle: Text(
                               DateFormat('dd/MM/yyyy').format(searchItem.date),
                               style: const TextStyle(
                                 color: Colors.white,

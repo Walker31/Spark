@@ -1,4 +1,3 @@
 {
-    "cmake.sourceDirectory": "E:/Flutter Projects/spark/linux",
-    "cmake.ignoreCMakeListsMissing": true
+    "cmake.configureOnOpen": false
 }

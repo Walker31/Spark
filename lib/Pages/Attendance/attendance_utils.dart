@@ -104,6 +104,79 @@ void navigateToItemEntry(BuildContext context) {
   );
 }
 
+void editSubject(BuildContext context, Subject subject) {
+  final formKey = GlobalKey<FormState>();
+  final TextEditingController nameController =
+      TextEditingController(text: subject.subName);
+  final TextEditingController codeController =
+      TextEditingController(text: subject.subCode);
+
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Edit Subject'),
+        content: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextFormField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: 'Subject Name'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter the subject name';
+                  }
+                  return null;
+                },
+              ),
+              TextFormField(
+                controller: codeController,
+                decoration: const InputDecoration(labelText: 'Subject Code'),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter the subject code';
+                  }
+                  return null;
+                },
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              if (formKey.currentState?.validate() ?? false) {
+                // Update subject details
+                final updatedSubject = Subject(
+                  id: subject.id,
+                  subName: nameController.text,
+                  subCode: codeController.text,
+                  nPresent: subject.nPresent,
+                  nTotal: subject.nTotal,
+                  percent: subject.percent,
+                );
+
+                Provider.of<AttendanceProvider>(context, listen: false)
+                    .updateSubject(updatedSubject);
+                Navigator.of(context).pop();
+              }
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 void markAttendance(BuildContext context, Subject item, DateTime selectedDate,
     int selectedItem) {
   final attendanceProvider =
@@ -121,7 +194,39 @@ void markAttendance(BuildContext context, Subject item, DateTime selectedDate,
   attendanceProvider.updateSubject(item);
 }
 
-void deleteSubject(BuildContext context, Subject subject) {
+Future<bool> confirmDelete(BuildContext context, Subject subject) async {
+  final result = await showDialog<bool>(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Delete Subject'),
+        content: const Text('Are you sure you want to delete this subject?'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(false);
+            },
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(true);
+            },
+            child: const Text('Delete'),
+          ),
+        ],
+      );
+    },
+  );
+  if (result == true) {
+    // ignore: use_build_context_synchronously
+    Provider.of<AttendanceProvider>(context, listen: false)
+        .deleteSubject(subject.id!);
+  }
+  return result ?? false;
+}
+
+void showDeleteDialog(BuildContext context, Subject subject) {
   showDialog(
     context: context,
     builder: (BuildContext context) {

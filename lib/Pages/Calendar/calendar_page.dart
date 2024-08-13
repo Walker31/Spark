@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:realm/realm.dart';
+import 'package:spark/Pages/Calendar/Dialogs/Info_dialog.dart';
 import 'package:spark/Pages/Calendar/expandable_fab.dart';
 import 'package:spark/Pages/Calendar/time_table.dart';
 import 'package:spark/fonts.dart';
@@ -159,8 +160,6 @@ class _CalendarPageState extends State<CalendarPage> {
     );
   }
 
-  
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -169,6 +168,14 @@ class _CalendarPageState extends State<CalendarPage> {
           backgroundColor: Colors.transparent,
           automaticallyImplyLeading: false,
           centerTitle: true,
+          actions: [
+            IconButton(
+                onPressed: () => showInfoDialog(context),
+                icon: const Icon(
+                  Icons.info_outline,
+                  color: Colors.blue,
+                ))
+          ],
           title: const Text('C A L E N D A R', style: appBarTitleStyle),
         ),
         body: ListView(
@@ -201,7 +208,7 @@ class _CalendarPageState extends State<CalendarPage> {
                         ],
                       )
                     : EventList(
-                      date:_selectedDate,
+                        date: _selectedDate,
                         events: events,
                         realm: realm,
                         onDelete: (String id) {

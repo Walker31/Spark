@@ -36,10 +36,7 @@ class History extends StatelessWidget {
                 Navigator.of(context).pop();
               },
             ),
-            title: const Text(
-              "H I S T O R Y",
-              style: appBarTitleStyle
-            ),
+            title: const Text("H I S T O R Y", style: appBarTitleStyle),
             centerTitle: true,
             backgroundColor: Colors.transparent,
             elevation: 0,
@@ -182,7 +179,11 @@ class HistoryListState extends State<HistoryList> {
                 child: Dismissible(
                   key: ValueKey(historyItem.id),
                   background: Container(
-                    color: Colors.red,
+                    decoration: BoxDecoration(
+                        color: Colors.red,
+                        border: Border.all(),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(8))),
                     alignment: Alignment.centerRight,
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: const Icon(

@@ -12,7 +12,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  var selectedIndex = 0;
+  var selectedIndex = 1;
 
   @override
   Widget build(BuildContext context) {
