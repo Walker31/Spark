@@ -1,16 +1,31 @@
-# spark
+# Spark  
 
-A new Flutter project.
+Spark is a **Flutter-based** attendance tracker and calendar app designed for students to **monitor and manage their class attendance** efficiently. It allows users to **store attendance records, track attendance percentage, and view schedules** in a structured calendar format.  
 
-## Getting Started
+## Features  
 
-This project is a starting point for a Flutter application.
+- **Attendance Tracking:** Log and monitor your class attendance with ease.  
+- **Percentage Calculation:** Automatically calculates and updates your attendance percentage.  
+- **Calendar Integration:** View and manage your attendance records in a calendar view.  
+- **Data Storage with Realm:** Uses **Realm** as a local database for seamless and efficient data management.  
+- **User-Friendly UI:** Simple and intuitive interface for quick access to attendance records.  
 
-A few resources to get you started if this is your first Flutter project:
+## Tech Stack  
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- **Flutter:** Cross-platform framework for building the app.  
+- **Realm Database:** Fast and lightweight local storage for attendance data.  
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Getting Started  
+
+To run this project on your local machine:  
+
+1. Clone the repository:  
+   ```bash
+   git clone https://github.com/yourusername/spark.git
+   cd spark
+2. Install Dependencies
+   ```bash
+   flutter pub get
+4. Run the app
+   ```bash
+   fluter run
